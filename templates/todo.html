@@ -1,0 +1,468 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}To-Do List - MindFlow{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #0f172a;
+        color: white;
+        text-align: center;
+        min-height: 100vh;
+    }
+    
+    /* Override base.html background */
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+    
+    h1 {
+        margin: 20px;
+        color: white;
+        font-size: 36px;
+    }
+    
+    /* FORM */
+    .task-form {
+        margin: 20px;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    input, select, button {
+        padding: 12px 15px;
+        border: none;
+        border-radius: 8px;
+        margin: 5px;
+        font-size: 14px;
+    }
+    
+    input[type="text"] {
+        width: 250px;
+    }
+    
+    input[type="date"] {
+        background: #334155;
+        color: white;
+    }
+    
+    button {
+        background: #22c55e;
+        color: white;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background 0.3s;
+    }
+    
+    button:hover {
+        background: #16a34a;
+    }
+    
+    /* BOARD */
+    .board {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        padding: 20px;
+        flex-wrap: wrap;
+    }
+    
+    .column {
+        background: #1e293b;
+        padding: 15px;
+        width: 320px;
+        border-radius: 12px;
+        min-height: 450px;
+    }
+    
+    .column h2 {
+        margin-bottom: 20px;
+        font-size: 20px;
+    }
+    
+    /* TASK CARD */
+    .task {
+        background: #334155;
+        margin: 10px 0;
+        padding: 12px;
+        border-radius: 10px;
+        text-align: left;
+        animation: fade 0.4s;
+    }
+    
+    @keyframes fade {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .task-title {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    
+    .task-date {
+        font-size: 13px;
+        color: #94a3b8;
+        margin-bottom: 8px;
+    }
+    
+    /* PRIORITY COLORS */
+    .priority {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        text-transform: uppercase;
+        font-weight: 500;
+    }
+    
+    .priority.high {
+        background: #ef4444;
+    }
+    
+    .priority.medium {
+        background: #f59e0b;
+    }
+    
+    .priority.low {
+        background: #22c55e;
+    }
+    
+    .task-actions {
+        margin-top: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    
+    .task-actions button {
+        padding: 6px 10px;
+        font-size: 11px;
+        background: #475569;
+        margin: 2px;
+    }
+    
+    .task-actions button:hover {
+        background: #64748b;
+    }
+    
+    .task-actions button.delete {
+        background: #ef4444;
+    }
+    
+    .task-actions button.delete:hover {
+        background: #dc2626;
+    }
+    
+    /* POPUP OVERLAY */
+    .popup {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.6);
+        z-index: 1000;
+    }
+    
+    /* POPUP BOX */
+    .popup-content {
+        background: #1e293b;
+        padding: 30px;
+        border-radius: 12px;
+        text-align: center;
+        width: 350px;
+        animation: popupAnimation 0.3s ease;
+        border: 2px solid #475569;
+    }
+    
+    .popup-content h3 {
+        margin-bottom: 15px;
+        font-size: 20px;
+    }
+    
+    .popup-content button {
+        background: #4a90e2;
+        margin-top: 15px;
+    }
+    
+    .hidden {
+        display: none;
+    }
+    
+    /* Animation */
+    @keyframes popupAnimation {
+        from {
+            transform: scale(0.7);
+            opacity: 0;
+        }
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+    
+    /* Empty state */
+    .empty-message {
+        color: #64748b;
+        font-size: 14px;
+        padding: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header with Home Button -->
+<div style="display: flex; justify-content: space-between; align-items: center; padding: 20px; max-width: 1200px; margin: 0 auto;">
+    <a href="{% url 'dashboard' %}" style="background: #22c55e; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 8px;">🏠 Home</a>
+    <h1 style="margin: 0;">🚀 Smart To-Do Board</h1>
+    <div style="width: 100px;"></div>
+</div>
+
+<!-- ADD TASK -->
+<div class="task-form">
+    <input id="taskInput" placeholder="Enter task">
+    <input type="date" id="dateInput">
+    <select id="priorityInput">
+        <option value="high">High Priority</option>
+        <option value="medium">Medium Priority</option>
+        <option value="low">Low Priority</option>
+    </select>
+    <button onclick="addTask()">Add Task</button>
+</div>
+
+<!-- BOARD -->
+<div class="board">
+    <div class="column">
+        <h2>📋 To-Do</h2>
+        <div id="todo">
+{% for task in tasks %}
+{% if task.status == 'todo' %}
+<div class="task" data-date="{{ task.due_date }}" data-title="{{ task.title }}">
+    <div class="task-title">{{ task.title }}</div>
+    <div class="task-date">Due: {{ task.due_date }}</div>
+    <span class="priority {{ task.priority }}">{{ task.priority }}</span>
+    <div class="task-actions">
+        <button onclick="moveTask({{ task.id }}, 'progress')">Progress</button>
+        <button onclick="moveTask({{ task.id }}, 'done')">Done</button>
+        <button class="delete" onclick="deleteTask({{ task.id }})">Delete</button>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+        </div>
+    </div>
+    
+    <div class="column">
+        <h2>⚙️ In Progress</h2>
+        <div id="progress">
+{% for task in tasks %}
+{% if task.status == 'progress' %}
+<div class="task" data-date="{{ task.due_date }}" data-title="{{ task.title }}">
+    <div class="task-title">{{ task.title }}</div>
+    <div class="task-date">Due: {{ task.due_date }}</div>
+    <span class="priority {{ task.priority }}">{{ task.priority }}</span>
+    <div class="task-actions">
+        <button onclick="moveTask({{ task.id }}, 'todo')">To-Do</button>
+        <button onclick="moveTask({{ task.id }}, 'done')">Done</button>
+        <button class="delete" onclick="deleteTask({{ task.id }})">Delete</button>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+        </div>
+    </div>
+    
+    <div class="column">
+        <h2>✅ Done</h2>
+        <div id="done">
+{% for task in tasks %}
+{% if task.status == 'done' %}
+<div class="task" data-date="{{ task.due_date }}" data-title="{{ task.title }}">
+    <div class="task-title">{{ task.title }}</div>
+    <div class="task-date">Due: {{ task.due_date }}</div>
+    <span class="priority {{ task.priority }}">{{ task.priority }}</span>
+    <div class="task-actions">
+        <button onclick="moveTask({{ task.id }}, 'todo')">To-Do</button>
+        <button onclick="moveTask({{ task.id }}, 'progress')">Progress</button>
+        <button class="delete" onclick="deleteTask({{ task.id }})">Delete</button>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- POPUP -->
+<div id="popup" class="popup hidden">
+    <div class="popup-content">
+        <h3>📌 Task Reminder</h3>
+        <p id="popupMessage"></p>
+        <button onclick="closePopup()">OK</button>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    /* ELEMENTS */
+    const taskInput = document.getElementById("taskInput");
+    const dateInput = document.getElementById("dateInput");
+    const priorityInput = document.getElementById("priorityInput");
+    
+    const popup = document.getElementById("popup");
+    const popupMessage = document.getElementById("popupMessage");
+    
+    /* DATA - Get from Django context (server-side rendered) */
+    // Tasks will be rendered by Django from the database
+    
+    /* PRIORITY ORDER */
+    function getPriorityValue(priority) {
+        return {high: 1, medium: 2, low: 3}[priority] || 4;
+    }
+    
+    /* ADD TASK - Send to server */
+    async function addTask() {
+        const title = taskInput.value.trim();
+        const date = dateInput.value;
+        const priority = priorityInput.value;
+        
+        if (!title || !date) {
+            alert("Please enter a task and select a due date");
+            return;
+        }
+        
+        // Send to server via fetch
+        const formData = new FormData();
+        formData.append('title', title);
+        formData.append('due_date', date);
+        formData.append('priority', priority);
+        
+        try {
+            const response = await fetch('{% url "todo" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            });
+            
+            if (response.ok) {
+                // Reload the page to show new task
+                window.location.href = '{% url "todo" %}';
+            }
+        } catch (error) {
+            console.error('Error adding task:', error);
+            alert('Failed to add task');
+        }
+        
+        taskInput.value = "";
+        dateInput.value = "";
+    }
+    
+    /* MOVE TASK */
+    async function moveTask(id, status) {
+        try {
+            const response = await fetch(`/todo/update/${id}/${status}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            });
+            
+            if (response.ok) {
+                window.location.href = '{% url "todo" %}';
+            }
+        } catch (error) {
+            console.error('Error updating task:', error);
+        }
+    }
+    
+    /* DELETE TASK */
+    async function deleteTask(id) {
+        if (!confirm('Are you sure you want to delete this task?')) return;
+        
+        try {
+            const response = await fetch(`/todo/delete/${id}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            });
+            
+            if (response.ok) {
+                window.location.href = '{% url "todo" %}';
+            }
+        } catch (error) {
+            console.error('Error deleting task:', error);
+        }
+    }
+    
+    /* DEADLINE CHECK - For notifications */
+    function checkDeadlines() {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        // Check each task for deadline notifications
+        document.querySelectorAll('.task').forEach(function(taskEl) {
+            const taskDate = taskEl.dataset.date;
+            const taskTitle = taskEl.dataset.title;
+            
+            if (!taskDate) return;
+            
+            const taskDateObj = new Date(taskDate);
+            taskDateObj.setHours(0, 0, 0, 0);
+            
+            const diffDays = Math.floor((taskDateObj - today) / (1000 * 60 * 60 * 24));
+            
+            // Today reminder
+            if (diffDays === 0) {
+                showPopup("⚠️ \"" + taskTitle + "\" is due TODAY");
+            }
+            
+            // Tomorrow reminder
+            if (diffDays === 1) {
+                showPopup("⏳ \"" + taskTitle + "\" is due TOMORROW");
+            }
+        });
+    }
+    
+    /* POPUP */
+    function showPopup(msg) {
+        // Play notification sound
+        const notificationSound = new Audio("{% static 'sounds/notification.mp3' %}");
+        notificationSound.play().catch(function() {});
+        
+        popupMessage.innerText = msg;
+        popup.classList.remove("hidden");
+    }
+    
+    function closePopup() {
+        popup.classList.add("hidden");
+    }
+    
+    /* INIT */
+    // Request notification permission
+    if (Notification.permission !== "granted") {
+        Notification.requestPermission();
+    }
+    
+    // Check deadlines on page load
+    setTimeout(checkDeadlines, 2000);
+    
+    // Check deadlines every hour
+    setInterval(checkDeadlines, 60 * 60 * 1000);
+</script>
+{% endblock %}
+

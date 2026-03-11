@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}{{ syllabus.title }} - MindFlow{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Home Button -->
+    <a href="{% url 'dashboard' %}" class="home-btn">🏠 Home</a>
+    
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <a href="{% url 'dashboard' %}">Dashboard</a> > <span>{{ syllabus.title }}</span>
+    </div>
+    
+    <!-- Syllabus Header -->
+    <div class="syllabus-header">
+        <h1>{{ syllabus.title }}</h1>
+        <p class="syllabus-meta">Uploaded: {{ syllabus.uploaded_at|date:"F d, Y" }}</p>
+    </div>
+    
+    <!-- Units Section -->
+    <div class="units-section">
+        <h2>Units</h2>
+        
+        {% if units %}
+            <div class="units-list">
+                {% for unit in units %}
+                <div class="unit-card">
+                    <div class="unit-header">
+                        <span class="unit-number">{{ forloop.counter }}</span>
+                        <h3>{{ unit.name }}</h3>
+                    </div>
+                    <div class="unit-content">
+                        <p>{{ unit.content|truncatewords:30 }}</p>
+                    </div>
+                    <div class="unit-actions">
+                        {% if unit.topics.count > 0 %}
+                            <a href="{% url 'unit_detail' unit.id %}" class="btn btn-view-topics">
+                                View {{ unit.topics.count }} Topics
+                            </a>
+                        {% else %}
+                            <form method="post" action="{% url 'extract_topics' unit.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-extract">
+                                    ✨ Extract Topics with AI
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <p>No units found in this syllabus.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .home-btn {
+        display: inline-block;
+        background: #22c55e;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        margin-bottom: 20px;
+    }
+    
+    .home-btn:hover {
+        background: #16a34a;
+    }
+    
+    .breadcrumb {
+        margin-bottom: 20px;
+        color: #666;
+    }
+    
+    .breadcrumb a {
+        color: #4a90e2;
+        text-decoration: none;
+    }
+    
+    .syllabus-header {
+        margin-bottom: 40px;
+    }
+    
+    .syllabus-header h1 {
+        color: #333;
+        font-size: 32px;
+    }
+    
+    .syllabus-meta {
+        color: #888;
+        margin-top: 5px;
+    }
+    
+    .units-section h2 {
+        color: #333;
+        margin-bottom: 25px;
+    }
+    
+    .units-list {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .unit-card {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    }
+    
+    .unit-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .unit-number {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: #4a90e2;
+        color: white;
+        border-radius: 50%;
+        font-weight: bold;
+    }
+    
+    .unit-header h3 {
+        color: #333;
+        font-size: 18px;
+    }
+    
+    .unit-content {
+        color: #666;
+        margin-bottom: 20px;
+        line-height: 1.6;
+    }
+    
+    .unit-actions {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .btn-extract {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+    }
+    
+    .btn-extract:hover {
+        opacity: 0.9;
+    }
+    
+    .btn-view-topics {
+        background: #4a90e2;
+        color: white;
+        text-decoration: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 50px;
+        color: #666;
+    }
+</style>
+{% endblock %}
+

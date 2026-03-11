@@ -1,0 +1,769 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - MindFlow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: white;
+            padding: 15px 50px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .logo img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .menu {
+            display: flex;
+            gap: 30px;
+        }
+
+        .menu a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            font-size: 15px;
+            transition: color 0.3s;
+        }
+
+        .menu a:hover {
+            color: #000;
+        }
+
+        .menu a.active {
+            color: #000;
+            font-weight: 600;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-menu span {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .logout-btn {
+            padding: 8px 20px;
+            background: #000;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 13px;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #333;
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 30px;
+        }
+
+        /* Greeting */
+        .greeting {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .greeting h1 {
+            color: #000;
+            font-size: 32px;
+            font-weight: 600;
+        }
+
+        /* Upload Section */
+        .upload-section {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 50px;
+        }
+
+        .upload-box {
+            background: white;
+            padding: 45px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+            border: 2px dashed #ccc;
+        }
+
+        .upload-icon {
+            font-size: 55px;
+            margin-bottom: 15px;
+        }
+
+        .upload-box h3 {
+            color: #000;
+            margin-bottom: 10px;
+            font-size: 22px;
+        }
+
+        .upload-box p {
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .upload-form .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #dcdcdc;
+            border-radius: 10px;
+            font-size: 14px;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .upload-form .form-group input:focus {
+            border-color: #000;
+        }
+
+        .file-input-wrapper {
+            margin: 20px 0;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            display: none;
+        }
+
+        .file-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px 25px;
+            background: #f5f5f5;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-label:hover {
+            background: #e8e8e8;
+            border-color: #ccc;
+        }
+
+        .file-icon {
+            font-size: 20px;
+        }
+
+        .btn-upload {
+            width: 100%;
+            padding: 14px;
+            background: #000;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-upload:hover {
+            background: #333;
+        }
+
+        /* Syllabi Section */
+        .syllabi-section {
+            margin-top: 20px;
+        }
+
+        .syllabi-section h2 {
+            color: #000;
+            margin-bottom: 25px;
+            font-size: 24px;
+        }
+
+        .syllabi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .syllabus-card {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            flex-wrap: wrap;
+        }
+
+        .syllabus-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .syllabus-icon {
+            font-size: 40px;
+        }
+
+        .syllabus-info {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .syllabus-info h3 {
+            color: #000;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .syllabus-date {
+            color: #888;
+            font-size: 12px;
+        }
+
+        .syllabus-units {
+            color: #333;
+            font-size: 13px;
+            font-weight: 500;
+            margin-top: 3px;
+        }
+
+        .syllabus-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-view {
+            padding: 10px 18px;
+            background: #000;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .btn-view:hover {
+            background: #333;
+        }
+
+        .btn-delete {
+            padding: 10px 18px;
+            background: #fff;
+            color: #333;
+            border: 2px solid #ccc;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .btn-delete:hover {
+            background: #333;
+            color: white;
+            border-color: #333;
+        }
+
+        /* Chatbot */
+        .chatbot-toggle {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: #000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            transition: transform 0.3s;
+        }
+
+        .chatbot-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .chatbot-toggle span {
+            font-size: 28px;
+        }
+
+        .chatbot-window {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 380px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            display: none;
+            overflow: hidden;
+        }
+
+        .chatbot-window.active {
+            display: block;
+        }
+
+        .chatbot-header {
+            background: #000;
+            color: white;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chatbot-header span {
+            font-size: 28px;
+        }
+
+        .chatbot-header h4 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .chatbot-close {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .chatbot-messages {
+            height: 320px;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f8f8;
+        }
+
+        .chatbot-message {
+            margin: 12px 0;
+            max-width: 80%;
+        }
+
+        .chatbot-message.bot {
+            text-align: left;
+        }
+
+        .chatbot-message.user {
+            text-align: right;
+            margin-left: auto;
+        }
+
+        .chatbot-message .message-content {
+            display: inline-block;
+            padding: 12px 16px;
+            border-radius: 14px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .chatbot-message.bot .message-content {
+            background: #e8e8e8;
+            color: #333;
+        }
+
+        .chatbot-message.user .message-content {
+            background: #000;
+            color: white;
+        }
+
+        .chatbot-input-area {
+            display: flex;
+            border-top: 1px solid #eee;
+        }
+
+        .chatbot-input-area input {
+            flex: 1;
+            border: none;
+            padding: 16px;
+            outline: none;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .chatbot-input-area button {
+            background: #000;
+            color: white;
+            border: none;
+            padding: 16px 20px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .chatbot-input-area button:hover {
+            background: #333;
+        }
+
+        /* Delete Confirmation Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .modal-content h3 {
+            color: #000;
+            margin-bottom: 15px;
+        }
+
+        .modal-content p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .modal-buttons button {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .modal-buttons .confirm-delete {
+            background: #000;
+            color: white;
+            border: none;
+        }
+
+        .modal-buttons .confirm-delete:hover {
+            background: #333;
+        }
+
+        .modal-buttons .cancel-delete {
+            background: white;
+            color: #333;
+            border: 2px solid #ccc;
+        }
+
+        .modal-buttons .cancel-delete:hover {
+            background: #f5f5f5;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 15px 20px;
+            }
+
+            .menu {
+                display: none;
+            }
+
+            .container {
+                padding: 30px 20px;
+            }
+
+            .upload-box {
+                padding: 30px;
+            }
+
+            .syllabi-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .syllabus-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">
+            <img src="{% static 'images/logo.jpeg' %}" alt="MindFlow">
+        </div>
+        <div class="menu">
+<a href="#" class="active">Dashboard</a>
+            <a href="{% url 'ai_prep' %}">AI Prep</a>
+            <a href="{% url 'todo' %}">To Do</a>
+            <a href="{% url 'focus' %}">Focus</a>
+            <a href="{% url 'documents' %}">Documents</a>
+            <a href="{% url 'profile' %}">Profile</a>
+        </div>
+        <div class="user-menu">
+            <span>Hello, {{ user.username }}</span>
+            <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Greeting -->
+        <div class="greeting">
+            <h1>Welcome back, {{ user.username }}!</h1>
+        </div>
+        
+        <!-- Upload Section -->
+        <div class="upload-section">
+            <div class="upload-box">
+                <div class="upload-icon">📚</div>
+                <h3>Upload Syllabus</h3>
+                <p>Upload your PDF syllabus and we'll extract the units and topics for you</p>
+                
+                <form method="post" action="{% url 'upload_syllabus' %}" enctype="multipart/form-data" class="upload-form">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <input type="text" name="title" placeholder="Syllabus Title (e.g., Python Programming)" required>
+                    </div>
+                    <div class="file-input-wrapper">
+                        <input type="file" name="syllabus" id="syllabus" accept=".pdf" required>
+                        <label for="syllabus" class="file-label">
+                            <span class="file-icon">📎</span>
+                            <span class="file-text">Choose PDF file</span>
+                        </label>
+                    </div>
+                    <button type="submit" class="btn-upload">Upload & Extract</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Uploaded Syllabi Section - AT THE BOTTOM -->
+        {% if syllabi %}
+        <div class="syllabi-section">
+            <h2>Your Syllabi</h2>
+            <div class="syllabi-grid">
+                {% for syllabus in syllabi %}
+                <div class="syllabus-card">
+                    <div class="syllabus-icon">📄</div>
+                    <div class="syllabus-info">
+                        <h3>{{ syllabus.title }}</h3>
+                        <p class="syllabus-date">Uploaded: {{ syllabus.uploaded_at|date:"M d, Y" }}</p>
+                        <p class="syllabus-units">{{ syllabus.units.count }} Units</p>
+                    </div>
+                    <div class="syllabus-actions">
+                        <a href="{% url 'syllabus_detail' syllabus.id %}" class="btn-view">View Units</a>
+                        <button class="btn-delete" onclick="showDeleteModal({{ syllabus.id }}, '{{ syllabus.title|escapejs }}')">Delete</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal" id="deleteModal">
+        <div class="modal-content">
+            <h3>Delete Syllabus</h3>
+            <p>Are you sure you want to delete "<span id="deleteSyllabusTitle"></span>"? This action cannot be undone.</p>
+            <div class="modal-buttons">
+                <button class="cancel-delete" onclick="hideDeleteModal()">Cancel</button>
+                <button class="confirm-delete" onclick="confirmDelete()">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chatbot -->
+    <div class="chatbot-toggle" onclick="toggleChatbot()">
+        <span>💬</span>
+    </div>
+
+    <div class="chatbot-window" id="chatbotWindow">
+        <div class="chatbot-header">
+            <span>💬</span>
+            <h4>Hey {{ user.username }}! I am your Bestie!</h4>
+            <button class="chatbot-close" onclick="toggleChatbot()">&times;</button>
+        </div>
+        <div class="chatbot-messages" id="chatbotMessages">
+            <div class="chatbot-message bot">
+                <div class="message-content">
+                    Hey {{ user.username }}! I am your Bestie! Are you stressed out? Super happy? or Just feeling bored? I am your Mental Well-Being Chatbot! Let's have a short chat. 😊
+                </div>
+            </div>
+        </div>
+        <div class="chatbot-input-area">
+            <input type="text" id="chatbotInput" placeholder="Type your message..." onkeypress="handleChatbotKeyPress(event)">
+            <button onclick="sendChatbotMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // Delete Modal Functions
+        let syllabusToDelete = null;
+
+        function showDeleteModal(syllabusId, syllabusTitle) {
+            syllabusToDelete = syllabusId;
+            document.getElementById('deleteSyllabusTitle').textContent = syllabusTitle;
+            document.getElementById('deleteModal').classList.add('show');
+        }
+
+        function hideDeleteModal() {
+            syllabusToDelete = null;
+            document.getElementById('deleteModal').classList.remove('show');
+        }
+
+        function confirmDelete() {
+            if (syllabusToDelete) {
+                // Create form and submit delete request
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/syllabus/' + syllabusToDelete + '/delete/';
+                
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrfmiddlewaretoken';
+                csrfInput.value = '{{ csrf_token }}';
+                
+                form.appendChild(csrfInput);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        // Chatbot Functions
+        function toggleChatbot() {
+            const window = document.getElementById('chatbotWindow');
+            window.classList.toggle('active');
+        }
+        
+        function handleChatbotKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendChatbotMessage();
+            }
+        }
+        
+        function sendChatbotMessage() {
+            const input = document.getElementById('chatbotInput');
+            const message = input.value.trim();
+            
+            if (message === '') return;
+            
+            const messagesDiv = document.getElementById('chatbotMessages');
+            
+            // Add user message
+            const userMsg = document.createElement('div');
+            userMsg.className = 'chatbot-message user';
+            userMsg.innerHTML = '<div class="message-content">' + message + '</div>';
+            messagesDiv.appendChild(userMsg);
+            
+            input.value = '';
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            
+        // Send to Django chatbot
+            fetch('/chatbot/chat/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({message: message})
+            })
+            .then(response => response.json())
+            .then(data => {
+                const botMsg = document.createElement('div');
+                botMsg.className = 'chatbot-message bot';
+                botMsg.innerHTML = '<div class="message-content">' + data.reply + '</div>';
+                messagesDiv.appendChild(botMsg);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                const botMsg = document.createElement('div');
+                botMsg.className = 'chatbot-message bot';
+                botMsg.innerHTML = '<div class="message-content">Sorry, I\'m having trouble connecting right now. Please try again later.</div>';
+                messagesDiv.appendChild(botMsg);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            });
+        }
+        
+        // Django CSRF token helper
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Check URL for chatbot=open parameter and auto-open chatbot
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('chatbot') === 'open') {
+                document.getElementById('chatbotWindow').classList.add('active');
+                // Clear the query parameter from URL without reloading
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        });
+    </script>
+</body>
+</html>
+
+

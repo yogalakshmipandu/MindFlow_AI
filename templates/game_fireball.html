@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fireball Escape</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #1a1a2e;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+        }
+        h1 { margin-bottom: 10px; color: #ff6b6b; }
+        #gameCanvas {
+            border: 4px solid #4ecdc4;
+            border-radius: 8px;
+            background: #0f0f23;
+        }
+        #scoreBoard {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+        .score-item {
+            background: #16213e;
+            padding: 10px 25px;
+            border-radius: 8px;
+            border: 2px solid #4ecdc4;
+        }
+        #instructions {
+            margin-top: 15px;
+            color: #888;
+            font-size: 14px;
+        }
+        #backBtn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #4ecdc4;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        #backBtn:hover { background: #45b7aa; }
+    </style>
+</head>
+<body>
+    <button id="backBtn" onclick="window.parent.closeGamePanel()">← Back to Focus</button>
+    <h1>🔥 Fireball Escape</h1>
+    <div id="scoreBoard">
+        <div class="score-item">Score: <span id="score">0</span></div>
+        <div class="score-item">Level: <span id="level">1</span></div>
+    </div>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div id="instructions">Use Arrow Keys or WASD to move • Reach the green goal • Avoid orange fireballs!</div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Game state
+        let score = 0;
+        let level = 1;
+        let gameOver = false;
+        let gameWon = false;
+        
+        // Player
+        const player = {
+            x: 40,
+            y: 300,
+            radius: 15,
+            speed: 5,
+            color: '#4ecdc4'
+        };
+        
+        // Goal
+        const goal = {
+            x: 760,
+            y: 300,
+            radius: 20,
+            color: '#2ecc71'
+        };
+        
+        // Fireballs
+        let fireballs = [];
+        const numFireballs = 5;
+        
+        function createFireball() {
+            return {
+                x: Math.random() * (canvas.width / 2) + canvas.width / 3,
+                y: Math.random() * (canvas.height - 40) + 20,
+                radius: 10,
+                dx: (Math.random() > 0.5 ? 1 : -1) * (3 + Math.random()),
+                dy: (Math.random() > 0.5 ? 1 : -1) * (3 + Math.random()),
+                color: '#ff6b6b'
+            };
+        }
+        
+        function initFireballs(count) {
+            fireballs = [];
+            for (let i = 0; i < count; i++) {
+                fireballs.push(createFireball());
+            }
+        }
+        
+        // Input handling
+        const keys = {};
+        document.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            if ((gameOver || gameWon) && e.code === 'Space') {
+                resetGame();
+            }
+        });
+        document.addEventListener('keyup', (e) => keys[e.key] = false);
+        
+        function updatePlayer() {
+            if (keys['ArrowUp'] || keys['w'] || keys['W']) 
+                player.y = Math.max(player.radius, player.y - player.speed);
+            if (keys['ArrowDown'] || keys['s'] || keys['S']) 
+                player.y = Math.min(canvas.height - player.radius, player.y + player.speed);
+            if (keys['ArrowLeft'] || keys['a'] || keys['A']) 
+                player.x = Math.max(player.radius, player.x - player.speed);
+            if (keys['ArrowRight'] || keys['d'] || keys['D']) 
+                player.x = Math.min(canvas.width - player.radius, player.x + player.speed);
+        }
+        
+        function updateFireballs() {
+            fireballs.forEach(fb => {
+                fb.x += fb.dx;
+                fb.y += fb.dy;
+                
+                // Bounce off walls
+                if (fb.x <= fb.radius || fb.x >= canvas.width - fb.radius) fb.dx *= -1;
+                if (fb.y <= fb.radius || fb.y >= canvas.height - fb.radius) fb.dy *= -1;
+            });
+        }
+        
+        function checkCollisions() {
+            // Player vs Fireballs
+            fireballs.forEach(fb => {
+                const dist = Math.hypot(player.x - fb.x, player.y - fb.y);
+                if (dist < player.radius + fb.radius) {
+                    gameOver = true;
+                }
+            });
+            
+            // Player vs Goal
+            const distToGoal = Math.hypot(player.x - goal.x, player.y - goal.y);
+            if (distToGoal < player.radius + goal.radius) {
+                level++;
+                score += 100;
+                document.getElementById('score').textContent = score;
+                document.getElementById('level').textContent = level;
+                
+                // Reset player position
+                player.x = 40;
+                player.y = 300;
+                
+                // Add more fireballs and increase speed
+                initFireballs(numFireballs + level);
+                fireballs.forEach(fb => {
+                    fb.dx *= 1.1;
+                    fb.dy *= 1.1;
+                });
+            }
+        }
+        
+        function draw() {
+            // Clear canvas
+            ctx.fillStyle = '#0f0f23';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw goal
+            ctx.beginPath();
+            ctx.arc(goal.x, goal.y, goal.radius, 0, Math.PI * 2);
+            ctx.fillStyle = goal.color;
+            ctx.fill();
+            ctx.strokeStyle = '#27ae60';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // Draw player
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+            ctx.fillStyle = player.color;
+            ctx.fill();
+            ctx.strokeStyle = '#45b7aa';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // Draw fireballs
+            fireballs.forEach(fb => {
+                ctx.beginPath();
+                ctx.arc(fb.x, fb.y, fb.radius, 0, Math.PI * 2);
+                ctx.fillStyle = fb.color;
+                ctx.fill();
+                
+                // Inner glow
+                ctx.beginPath();
+                ctx.arc(fb.x - 3, fb.y - 3, fb.radius / 2, 0, Math.PI * 2);
+                ctx.fillStyle = '#feca57';
+                ctx.fill();
+            });
+            
+            // Draw game over / win message
+            if (gameOver) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#ff6b6b';
+                ctx.font = 'bold 48px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('GAME OVER!', canvas.width / 2, canvas.height / 2);
+                ctx.fillStyle = 'white';
+                ctx.font = '24px Arial';
+                ctx.fillText('Press SPACE to restart', canvas.width / 2, canvas.height / 2 + 50);
+            }
+        }
+        
+        function resetGame() {
+            score = 0;
+            level = 1;
+            gameOver = false;
+            gameWon = false;
+            player.x = 40;
+            player.y = 300;
+            document.getElementById('score').textContent = score;
+            document.getElementById('level').textContent = level;
+            initFireballs(numFireballs);
+        }
+        
+        function gameLoop() {
+            if (!gameOver) {
+                updatePlayer();
+                updateFireballs();
+                checkCollisions();
+            }
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Start game
+        initFireballs(numFireballs);
+        gameLoop();
+    </script>
+</body>
+</html>
+

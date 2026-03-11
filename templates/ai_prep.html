@@ -1,0 +1,903 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Prep - MindFlow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: white;
+            padding: 15px 50px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .logo img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .menu {
+            display: flex;
+            gap: 30px;
+        }
+
+        .menu a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            font-size: 15px;
+            transition: color 0.3s;
+        }
+
+        .menu a:hover {
+            color: #000;
+        }
+
+        .menu a.active {
+            color: #000;
+            font-weight: 600;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-menu span {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .logout-btn {
+            padding: 8px 20px;
+            background: #000;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 13px;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #333;
+        }
+
+        /* Main Container */
+        .main-container {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+            gap: 30px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 350px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-card {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .sidebar-card h2 {
+            color: #000;
+            font-size: 18px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .form-group select,
+        .form-group input[type="text"],
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+            transition: border-color 0.3s;
+        }
+
+        .form-group select:focus,
+        .form-group input[type="text"]:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #000;
+        }
+
+        .form-group textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .file-upload {
+            border: 2px dashed #ccc;
+            padding: 30px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-upload:hover {
+            border-color: #000;
+            background: #fafafa;
+        }
+
+        .file-upload input {
+            display: none;
+        }
+
+        .file-upload-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .file-upload-text {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .file-name {
+            margin-top: 10px;
+            color: #000;
+            font-weight: 500;
+            font-size: 13px;
+        }
+
+        .btn-process {
+            width: 100%;
+            padding: 14px;
+            background: #000;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-process:hover {
+            background: #333;
+        }
+
+        .btn-process:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Main Content */
+        .content {
+            flex: 1;
+        }
+
+        .header {
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #000;
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* Status Card */
+        .status-card {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+        }
+
+        .status-card h2 {
+            color: #000;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f8f8f8;
+            border-radius: 10px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ccc;
+        }
+
+        .status-dot.ready {
+            background: #22c55e;
+        }
+
+        .status-text {
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        /* Q&A Section */
+        .qa-section {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .qa-section h2 {
+            color: #000;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .question-input-wrapper {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .question-input {
+            flex: 1;
+            padding: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .question-input:focus {
+            outline: none;
+            border-color: #000;
+        }
+
+        .btn-ask {
+            padding: 14px 30px;
+            background: #000;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-ask:hover {
+            background: #333;
+        }
+
+        .btn-ask:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Chat Container */
+        .chat-container {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .chat-message {
+            margin-bottom: 20px;
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .chat-message.question {
+            background: #f5f5f5;
+            border-left: 4px solid #000;
+        }
+
+        .chat-message.answer {
+            background: #fafafa;
+            border-left: 4px solid #22c55e;
+        }
+
+        .chat-message-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .chat-message-content {
+            color: #333;
+            font-size: 14px;
+            line-height: 1.7;
+            white-space: pre-wrap;
+        }
+
+        .chat-message-content strong {
+            color: #000;
+        }
+
+        .model-tag {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 6px 12px;
+            background: #f0f0f0;
+            border-radius: 6px;
+            font-size: 11px;
+            color: #666;
+        }
+
+        /* Loading Spinner */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #000;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* Alert Messages */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .alert-success {
+            background: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .alert-error {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .alert-warning {
+            background: #fffbeb;
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
+
+        /* Link inputs container */
+        .link-inputs {
+            display: none;
+        }
+
+        .link-inputs.active {
+            display: block;
+        }
+
+        .link-input-wrapper {
+            margin-bottom: 10px;
+        }
+
+        .btn-add-link {
+            padding: 8px 16px;
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn-add-link:hover {
+            background: #eee;
+        }
+
+        /* Features */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .feature-card {
+            background: #f8f8f8;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .feature-icon {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+
+        .feature-card h3 {
+            color: #000;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .feature-card p {
+            color: #666;
+            font-size: 12px;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 50px 30px;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">
+            <img src="{% static 'images/logo.jpeg' %}" alt="MindFlow">
+        </div>
+        <div class="menu">
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+            <a href="#" class="active">AI Prep</a>
+            <a href="{% url 'todo' %}">To Do</a>
+            <a href="{% url 'focus' %}">Focus</a>
+            <a href="{% url 'documents' %}">Documents</a>
+            <a href="{% url 'profile' %}">Profile</a>
+        </div>
+        <div class="user-menu">
+            <span>Hello, {{ user.username }}</span>
+            <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <!-- Sidebar - Input Section -->
+        <div class="sidebar">
+            <div class="sidebar-card">
+                <h2>📤 Upload Your Data</h2>
+                
+                <div class="form-group">
+                    <label for="inputType">Input Type</label>
+                    <select id="inputType" onchange="handleInputTypeChange()">
+                        <option value="Link">Link (URL)</option>
+                        <option value="PDF">PDF File</option>
+                        <option value="Text">Text</option>
+                        <option value="DOCX">DOCX File</option>
+                        <option value="TXT">TXT File</option>
+                    </select>
+                </div>
+
+                <!-- Link Inputs -->
+                <div id="linkInputs" class="link-inputs active">
+                    <div class="form-group">
+                        <label>Number of Links</label>
+                        <input type="text" id="numLinks" value="1" min="1" max="10" onchange="renderLinkInputs()">
+                    </div>
+                    <div id="linkFields"></div>
+                    <button type="button" class="btn-add-link" onclick="addLinkField()">+ Add Another Link</button>
+                </div>
+
+                <!-- File Inputs -->
+                <div id="fileInputs" style="display: none;">
+                    <div class="form-group">
+                        <label>Upload File</label>
+                        <label class="file-upload" for="fileInput">
+                            <div class="file-upload-icon">📁</div>
+                            <div class="file-upload-text" id="fileUploadText">Click to upload file</div>
+                            <input type="file" id="fileInput" onchange="handleFileSelect()">
+                        </label>
+                        <div class="file-name" id="fileName"></div>
+                    </div>
+                </div>
+
+                <!-- Text Input -->
+                <div id="textInputs" style="display: none;">
+                    <div class="form-group">
+                        <label>Enter your text</label>
+                        <textarea id="textContent" placeholder="Paste your text here..."></textarea>
+                    </div>
+                </div>
+
+                <button class="btn-process" id="processBtn" onclick="processData()">
+                    🚀 Process Data
+                </button>
+            </div>
+
+            <!-- Features -->
+            <div class="features">
+                <div class="feature-card">
+                    <div class="feature-icon">📚</div>
+                    <h3>RAG-powered Q&A</h3>
+                    <p>Ask questions about your documents</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📄</div>
+                    <h3>Multiple File Types</h3>
+                    <p>PDF, DOCX, TXT, Links</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Fast Processing</h3>
+                    <p>Powered by Groq API</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content">
+            <div class="header">
+                <h1>🤖 AI Prep</h1>
+                <p>Your AI-powered study assistant with RAG (Retrieval Augmented Generation)</p>
+            </div>
+
+            <!-- Status Card -->
+            <div class="status-card">
+                <h2>📊 Status</h2>
+                <div class="status-indicator">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span class="status-text" id="statusText">No document processed yet</span>
+                </div>
+            </div>
+
+            <!-- Q&A Section -->
+            <div class="qa-section">
+                <h2>❓ Ask Questions</h2>
+                
+                <div class="question-input-wrapper">
+                    <input type="text" class="question-input" id="questionInput" 
+                           placeholder="Ask your question about the document..." 
+                           onkeypress="handleKeyPress(event)">
+                    <button class="btn-ask" id="askBtn" onclick="askQuestion()">Ask</button>
+                </div>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <div class="loading-text">Processing... This may take a moment.</div>
+                </div>
+
+                <div class="alert" id="alertMessage" style="display: none;"></div>
+
+                <div class="chat-container" id="chatContainer">
+                    <div class="empty-state" id="emptyState">
+                        <div class="empty-state-icon">💬</div>
+                        <h3>No questions yet</h3>
+                        <p>Upload a document and click "Process Data" to get started!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let linkCount = 1;
+        let isDocumentReady = false;
+
+        // Initialize link inputs on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            renderLinkInputs();
+        });
+
+        function handleInputTypeChange() {
+            const inputType = document.getElementById('inputType').value;
+            const linkInputs = document.getElementById('linkInputs');
+            const fileInputs = document.getElementById('fileInputs');
+            const textInputs = document.getElementById('textInputs');
+
+            linkInputs.classList.remove('active');
+            fileInputs.style.display = 'none';
+            textInputs.style.display = 'none';
+
+            if (inputType === 'Link') {
+                linkInputs.classList.add('active');
+            } else if (inputType === 'Text') {
+                textInputs.style.display = 'block';
+            } else {
+                fileInputs.style.display = 'block';
+            }
+        }
+
+        function renderLinkInputs() {
+            const numLinks = parseInt(document.getElementById('numLinks').value) || 1;
+            const container = document.getElementById('linkFields');
+            container.innerHTML = '';
+
+            for (let i = 0; i < numLinks; i++) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'link-input-wrapper';
+                wrapper.innerHTML = `<input type="text" id="link_${i}" placeholder="URL ${i + 1}" class="link-field">`;
+                container.appendChild(wrapper);
+            }
+        }
+
+        function addLinkField() {
+            const numLinksInput = document.getElementById('numLinks');
+            const currentCount = parseInt(numLinksInput.value) || 1;
+            if (currentCount < 10) {
+                numLinksInput.value = currentCount + 1;
+                renderLinkInputs();
+            }
+        }
+
+        function handleFileSelect() {
+            const fileInput = document.getElementById('fileInput');
+            const fileName = document.getElementById('fileName');
+            const fileUploadText = document.getElementById('fileUploadText');
+
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                fileName.textContent = `Selected: ${file.name}`;
+                fileUploadText.textContent = 'File selected!';
+            }
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                askQuestion();
+            }
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.getElementById('alertMessage');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            alertDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                alertDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function setLoading(isLoading) {
+            const loading = document.getElementById('loading');
+            const processBtn = document.getElementById('processBtn');
+            const askBtn = document.getElementById('askBtn');
+
+            if (isLoading) {
+                loading.classList.add('active');
+                processBtn.disabled = true;
+                askBtn.disabled = true;
+            } else {
+                loading.classList.remove('active');
+                processBtn.disabled = false;
+                askBtn.disabled = false;
+            }
+        }
+
+        async function processData() {
+            const inputType = document.getElementById('inputType').value;
+            const formData = new FormData();
+            formData.append('input_type', inputType);
+
+            try {
+                setLoading(true);
+                showAlert('Processing your data...', 'warning');
+
+                if (inputType === 'Link') {
+                    const numLinks = parseInt(document.getElementById('numLinks').value) || 1;
+                    for (let i = 0; i < numLinks; i++) {
+                        const linkValue = document.getElementById(`link_${i}`).value;
+                        if (linkValue) {
+                            formData.append('links', linkValue);
+                        }
+                    }
+                } else if (inputType === 'Text') {
+                    const textContent = document.getElementById('textContent').value;
+                    formData.append('text_content', textContent);
+                } else {
+                    const fileInput = document.getElementById('fileInput');
+                    if (fileInput.files.length > 0) {
+                        formData.append('file', fileInput.files[0]);
+                    }
+                }
+
+                const response = await fetch('{% url "process_ai_prep" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    isDocumentReady = true;
+                    document.getElementById('statusDot').classList.add('ready');
+                    document.getElementById('statusText').textContent = data.message;
+                    showAlert(data.message, 'success');
+                } else {
+                    showAlert(data.error, 'error');
+                }
+
+            } catch (error) {
+                showAlert('Error processing data: ' + error.message, 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        async function askQuestion() {
+            const questionInput = document.getElementById('questionInput');
+            const question = questionInput.value.trim();
+
+            if (!question) {
+                showAlert('Please enter a question', 'warning');
+                return;
+            }
+
+            if (!isDocumentReady) {
+                showAlert('Please process a document first', 'warning');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('question', question);
+
+            try {
+                setLoading(true);
+
+                const response = await fetch('{% url "ai_prep_qa" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    addMessageToChat('question', question);
+                    addMessageToChat('answer', data.answer, data.model);
+                    questionInput.value = '';
+                } else {
+                    showAlert(data.error, 'error');
+                }
+
+            } catch (error) {
+                showAlert('Error generating answer: ' + error.message, 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        function addMessageToChat(type, content, model = null) {
+            const chatContainer = document.getElementById('chatContainer');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (emptyState) {
+                emptyState.style.display = 'none';
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${type}`;
+            
+            const label = type === 'question' ? '❓ Your Question' : '📝 Answer';
+            let html = `<div class="chat-message-label">${label}</div>`;
+            html += `<div class="chat-message-content">${content}</div>`;
+            
+            if (model && type === 'answer') {
+                html += `<div class="model-tag">Generated using ${model}</div>`;
+            }
+
+            messageDiv.innerHTML = html;
+            chatContainer.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Django CSRF token helper
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html>
+

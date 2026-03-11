@@ -1,0 +1,705 @@
+{% extends "base.html" %}
+
+{% block title %}{{ topic.name }} - MindFlow{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Home Button -->
+    <a href="{% url 'dashboard' %}" class="home-btn">🏠 Home</a>
+    
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <a href="{% url 'dashboard' %}">Dashboard</a> > 
+        <a href="{% url 'syllabus_detail' topic.unit.syllabus.id %}">{{ topic.unit.syllabus.title }}</a> > 
+        <a href="{% url 'unit_detail' topic.unit.id %}">{{ topic.unit.name }}</a>
+    </div>
+    
+    <!-- Topic Header with Editable Name -->
+    <div class="topic-header">
+        <h1 id="topicName">{{ topic.name }}</h1>
+        <button class="btn btn-edit" onclick="toggleEdit()">✏️ Edit</button>
+        <div class="edit-form" id="editForm" style="display:none;">
+            <input type="text" id="topicNameInput" value="{{ topic.name }}">
+            <button class="btn" onclick="saveTopicName({{ topic.id }})">Save</button>
+            <button class="btn btn-secondary" onclick="toggleEdit()">Cancel</button>
+        </div>
+    </div>
+    
+    <!-- Add Links Section -->
+    <div class="add-links-section">
+        <div class="card">
+            <h3>Add Learning Resources</h3>
+            <form method="post" action="{% url 'add_link' topic.id %}" class="link-form" id="addLinkForm">
+                {% csrf_token %}
+                <div class="form-row">
+                    <div class="form-group">
+                        <select name="link_type" id="linkTypeSelect" required onchange="toggleLinkInput()">
+                            <option value="">Select type...</option>
+                            <option value="website">Website</option>
+                            <option value="youtube">YouTube</option>
+                            <option value="doc">Document</option>
+                            <option value="image">Image Link</option>
+                        </select>
+                    </div>
+                    
+                    <!-- URL Input -->
+                    <div class="form-group" id="urlInputGroup">
+                        <input type="url" name="url" id="urlInput" placeholder="Enter URL (e.g., https://...)">
+                    </div>
+                    
+                    <!-- Image Upload Input -->
+                    <div class="form-group" id="imageUploadGroup" style="display:none;">
+                        <input type="file" name="image_file" id="imageFileInput" accept="image/*">
+                        <input type="url" name="image_url" id="imageUrlInput" placeholder="Or enter image URL">
+                    </div>
+                    
+                    <!-- Document Upload Input -->
+                    <div class="form-group" id="docUploadGroup" style="display:none;">
+                        <input type="file" name="doc_file" id="docFileInput" accept=".doc,.docx,.txt,.pdf">
+                    </div>
+                    
+                    <div class="form-group">
+                        <input type="text" name="title" placeholder="Title (optional)">
+                    </div>
+                    <button type="submit" class="btn">Add Link</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Embedded Media Viewer (Modal) -->
+    <div class="modal" id="mediaModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title" id="modalTitle">View Content</span>
+                <div class="modal-controls">
+                    <button class="btn-size" onclick="resizeModal('small')">Small</button>
+                    <button class="btn-size" onclick="resizeModal('medium')">Medium</button>
+                    <button class="btn-size" onclick="resizeModal('large')">Large</button>
+                    <span class="close-modal" onclick="closeModal()">&times;</span>
+                </div>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Links Section -->
+    <div class="links-section">
+        <h2>Learning Resources</h2>
+        
+        {% if links %}
+            <div class="links-list">
+                {% for link in links %}
+                <div class="link-card">
+                    <div class="link-type-icon">
+                        {% if link.link_type == 'youtube' %}
+                            ▶️
+                        {% elif link.link_type == 'website' %}
+                            🌐
+                        {% elif link.link_type == 'doc' %}
+                            📄
+                        {% else %}
+                            🖼️
+                        {% endif %}
+                    </div>
+<div class="link-info">
+                        <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="link-title">
+                            {{ link.title|default:link.url }}
+                        </a>
+                        <span class="link-type">{{ link.get_link_type_display }}</span>
+                    </div>
+                    <a href="{% url 'delete_link' link.id %}" class="btn-delete" title="Delete">🗑️</a>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <p>No resources added yet.</p>
+                <p>Add links above to start building your learning resources for this topic.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Notes Section -->
+    <div class="notes-section">
+        <div class="card">
+            <h3>📝 Create Notes</h3>
+            <p>Create your own notes in PDF format</p>
+            <form method="post" action="{% url 'create_note' topic.id %}">
+                {% csrf_token %}
+                <textarea name="note_content" rows="6" placeholder="Write your notes here..."></textarea>
+                <button type="submit" class="btn">Download as PDF 📄</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Upload Document Section -->
+    <div class="upload-doc-section">
+        <div class="card">
+            <h3>📁 Upload Documents/Notes</h3>
+            <p>Upload PDF, DOC, or other documents for this topic</p>
+            <form method="post" action="{% url 'upload_topic_document' topic.id %}" enctype="multipart/form-data" class="upload-form">
+                {% csrf_token %}
+                <div class="form-row">
+                    <div class="form-group">
+                        <input type="text" name="title" placeholder="Document Title (optional)">
+                    </div>
+                    <div class="form-group">
+                        <select name="document_type">
+                            <option value="notes">Notes</option>
+                            <option value="assignment">Assignment</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <input type="file" name="document" accept=".pdf,.doc,.docx,.txt,.ppt,.pptx">
+                    </div>
+                    <button type="submit" class="btn">Upload 📤</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Uploaded Documents Section -->
+    {% if documents %}
+    <div class="documents-section">
+        <h2>📚 Your Documents</h2>
+        <div class="documents-list">
+            {% for doc in documents %}
+            <div class="document-card">
+                <div class="document-icon">📄</div>
+                <div class="document-info">
+                    <h3>{{ doc.title }}</h3>
+                    <span class="document-type {{ doc.document_type }}">{{ doc.get_document_type_display }}</span>
+                    <p class="document-date">Uploaded: {{ doc.uploaded_at|date:"M d, Y" }}</p>
+                </div>
+                <div class="document-actions">
+                    <a href="{{ doc.file.url }}" target="_blank" class="btn-view">View</a>
+                    <a href="{% url 'delete_topic_document' doc.id %}" class="btn-delete" onclick="return confirm('Are you sure?')">Delete</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .home-btn {
+        display: inline-block;
+        background: #22c55e;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        margin-bottom: 20px;
+    }
+    
+    .home-btn:hover {
+        background: #16a34a;
+    }
+    
+    .breadcrumb {
+        margin-bottom: 20px;
+        color: #666;
+    }
+    
+    .breadcrumb a {
+        color: #4a90e2;
+        text-decoration: none;
+    }
+    
+    .topic-header {
+        margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+    
+    .topic-header h1 {
+        color: #333;
+        font-size: 32px;
+        margin: 0;
+    }
+    
+    .btn-edit {
+        background: #6c757d;
+    }
+    
+    .edit-form {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .edit-form input {
+        padding: 8px 12px;
+        border: 2px solid #4a90e2;
+        border-radius: 6px;
+        font-size: 16px;
+    }
+    
+    .add-links-section {
+        margin-bottom: 40px;
+    }
+    
+    .link-form .form-row {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    
+    .link-form .form-group {
+        flex: 1;
+        min-width: 150px;
+        margin-bottom: 0;
+    }
+    
+    .link-form .btn {
+        flex: 0;
+        white-space: nowrap;
+    }
+    
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.7);
+    }
+    
+    .modal-content {
+        position: relative;
+        background-color: white;
+        margin: 5% auto;
+        padding: 0;
+        border-radius: 12px;
+        width: 80%;
+        max-width: 1000px;
+        transition: all 0.3s;
+    }
+    
+    .modal-content.small { width: 40%; }
+    .modal-content.medium { width: 70%; }
+    .modal-content.large { width: 95%; }
+    
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .modal-title {
+        font-size: 18px;
+        font-weight: 600;
+    }
+    
+    .modal-controls {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .btn-size {
+        padding: 5px 12px;
+        background: #4a90e2;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+    }
+    
+    .close-modal {
+        font-size: 28px;
+        font-weight: bold;
+        color: #aaa;
+        cursor: pointer;
+        margin-left: 15px;
+    }
+    
+    .close-modal:hover {
+        color: #000;
+    }
+    
+    .modal-body {
+        padding: 20px;
+        height: 70vh;
+        overflow: auto;
+    }
+    
+    .modal-body iframe, .modal-body img {
+        width: 100%;
+        height: 100%;
+        border: none;
+        border-radius: 8px;
+    }
+    
+    .links-section h2 {
+        color: #333;
+        margin-bottom: 25px;
+    }
+    
+    .links-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .link-card {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+    
+    .link-type-icon {
+        font-size: 28px;
+    }
+    
+    .link-info {
+        flex: 1;
+    }
+    
+    .link-title {
+        display: block;
+        color: #333;
+        font-weight: 500;
+        text-decoration: none;
+        margin-bottom: 5px;
+        cursor: pointer;
+    }
+    
+    .link-title:hover {
+        color: #4a90e2;
+    }
+    
+    .link-type {
+        font-size: 12px;
+        color: #888;
+    }
+    
+    .btn-delete {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 18px;
+        opacity: 0.6;
+        transition: opacity 0.3s;
+    }
+    
+    .btn-delete:hover {
+        opacity: 1;
+    }
+    
+    .notes-section {
+        margin-top: 40px;
+    }
+    
+    .notes-section textarea {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-family: inherit;
+        resize: vertical;
+        margin: 15px 0;
+    }
+    
+    /* Upload Document Section */
+    .upload-doc-section {
+        margin-top: 40px;
+    }
+    
+    .upload-doc-section .card {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+    
+    .upload-doc-section h3 {
+        color: #333;
+        margin-bottom: 10px;
+    }
+    
+    .upload-doc-section p {
+        color: #666;
+        margin-bottom: 20px;
+    }
+    
+    .upload-form .form-row {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    
+    .upload-form .form-group {
+        flex: 1;
+        min-width: 150px;
+    }
+    
+    .upload-form input[type="file"] {
+        padding: 8px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+    }
+    
+    .upload-form select {
+        padding: 10px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        background: white;
+    }
+    
+    /* Documents Section */
+    .documents-section {
+        margin-top: 40px;
+    }
+    
+    .documents-section h2 {
+        color: #333;
+        margin-bottom: 25px;
+    }
+    
+    .documents-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+    }
+    
+    .document-card {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+    
+    .document-icon {
+        font-size: 36px;
+    }
+    
+    .document-info {
+        flex: 1;
+    }
+    
+    .document-info h3 {
+        color: #333;
+        font-size: 16px;
+        margin-bottom: 5px;
+    }
+    
+    .document-type {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 500;
+        text-transform: uppercase;
+    }
+    
+    .document-type.notes {
+        background: #e0e7ff;
+        color: #4a90e2;
+    }
+    
+    .document-type.assignment {
+        background: #fef3c7;
+        color: #f59e0b;
+    }
+    
+    .document-type.other {
+        background: #f3f4f6;
+        color: #6b7280;
+    }
+    
+    .document-date {
+        font-size: 12px;
+        color: #888;
+        margin-top: 5px;
+    }
+    
+    .document-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .document-actions a {
+        padding: 8px 12px;
+        text-align: center;
+        border-radius: 6px;
+        font-size: 13px;
+        text-decoration: none;
+    }
+    
+    .btn-view {
+        background: #4a90e2;
+        color: white;
+    }
+    
+    .btn-delete {
+        background: #ef4444;
+        color: white;
+    }
+    
+    .btn-view:hover {
+        background: #357abd;
+    }
+    
+    .btn-delete:hover {
+        background: #dc2626;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px;
+        background: white;
+        border-radius: 12px;
+        color: #666;
+    }
+    
+    @media (max-width: 768px) {
+        .link-form .form-row {
+            flex-direction: column;
+        }
+        
+        .link-form .form-group {
+            width: 100%;
+        }
+        
+        .link-form .btn {
+            width: 100%;
+        }
+        
+        .modal-content {
+            width: 95% !important;
+            margin: 10% auto !important;
+        }
+    }
+</style>
+
+<script>
+    // Toggle edit mode for topic name
+    function toggleEdit() {
+        const nameDisplay = document.getElementById('topicName');
+        const editForm = document.getElementById('editForm');
+        if (editForm.style.display === 'none') {
+            nameDisplay.style.display = 'none';
+            editForm.style.display = 'flex';
+        } else {
+            nameDisplay.style.display = 'block';
+            editForm.style.display = 'none';
+        }
+    }
+    
+    // Save topic name via AJAX
+    function saveTopicName(topicId) {
+        const newName = document.getElementById('topicNameInput').value;
+        fetch(`/topic/${topicId}/edit-name/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: `name=${encodeURIComponent(newName)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('topicName').textContent = data.name;
+                toggleEdit();
+            }
+        });
+    }
+    
+    // Toggle link input based on type
+    function toggleLinkInput() {
+        const linkType = document.getElementById('linkTypeSelect').value;
+        const urlInput = document.getElementById('urlInputGroup');
+        const imageUpload = document.getElementById('imageUploadGroup');
+        const docUpload = document.getElementById('docUploadGroup');
+        
+        urlInput.style.display = 'none';
+        imageUpload.style.display = 'none';
+        docUpload.style.display = 'none';
+        
+        if (linkType === 'images') {
+            imageUpload.style.display = 'flex';
+        } else if (linkType === 'doc') {
+            docUpload.style.display = 'flex';
+            urlInput.style.display = 'flex';
+        } else if (linkType) {
+            urlInput.style.display = 'flex';
+        }
+    }
+    
+    // Open media in modal
+    function openMedia(type, url, title) {
+        const modal = document.getElementById('mediaModal');
+        const modalBody = document.getElementById('modalBody');
+        const modalTitle = document.getElementById('modalTitle');
+        
+        modalTitle.textContent = title || 'View Content';
+        modal.style.display = 'block';
+        
+        if (type === 'youtube') {
+            // Convert YouTube URL to embed URL
+            let embedUrl = url;
+            if (url.includes('youtube.com/watch')) {
+                const videoId = new URL(url).searchParams.get('v');
+                embedUrl = `https://www.youtube.com/embed/${videoId}`;
+            } else if (url.includes('youtu.be/')) {
+                const videoId = url.split('youtu.be/')[1].split('?')[0];
+                embedUrl = `https://www.youtube.com/embed/${videoId}`;
+            }
+            modalBody.innerHTML = `<iframe src="${embedUrl}" allowfullscreen></iframe>`;
+        } else if (type === 'website') {
+            modalBody.innerHTML = `<iframe src="${url}"></iframe>`;
+        } else if (type === 'images') {
+            modalBody.innerHTML = `<img src="${url}" alt="${title}">`;
+        } else if (type === 'doc') {
+            modalBody.innerHTML = `<iframe src="https://docs.google.com/gview?embedded=1&url=${encodeURIComponent(url)}"></iframe>`;
+        }
+    }
+    
+    // Resize modal
+    function resizeModal(size) {
+        const modalContent = document.querySelector('.modal-content');
+        modalContent.className = 'modal-content ' + size;
+    }
+    
+    // Close modal
+    function closeModal() {
+        document.getElementById('mediaModal').style.display = 'none';
+        document.getElementById('modalBody').innerHTML = '';
+    }
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('mediaModal');
+        if (event.target == modal) {
+            closeModal();
+        }
+    }
+</script>
+{% endblock %}
+

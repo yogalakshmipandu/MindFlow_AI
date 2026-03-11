@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sliding Puzzle</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #1a1a2e;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+        }
+        h1 { margin-bottom: 10px; color: #4ecdc4; }
+        #gameContainer {
+            background: #16213e;
+            padding: 30px;
+            border-radius: 15px;
+            border: 3px solid #4ecdc4;
+        }
+        #puzzle {
+            display: grid;
+            grid-template-columns: repeat(4, 80px);
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+        .tile {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        .tile:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+        }
+        .tile.empty {
+            background: #0f0f23;
+            cursor: default;
+        }
+        .tile.empty:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        #info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        #moves {
+            font-size: 20px;
+            color: #4ecdc4;
+        }
+        #status {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2ecc71;
+        }
+        button {
+            background: #4ecdc4;
+            color: #1a1a2e;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        button:hover { background: #45b7aa; }
+        #backBtn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #4ecdc4;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        #instructions {
+            margin-top: 15px;
+            color: #888;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <button id="backBtn" onclick="window.parent.closeGamePanel()">← Back to Focus</button>
+    <h1>🧩 Sliding Puzzle</h1>
+    <div id="gameContainer">
+        <div id="info">
+            <div id="moves">Moves: <span id="moveCount">0</span></div>
+            <div id="status"></div>
+        </div>
+        <div id="puzzle"></div>
+        <div style="text-align: center;">
+            <button onclick="shufflePuzzle()">New Game</button>
+        </div>
+    </div>
+    <div id="instructions">Click tiles adjacent to the empty space to move them</div>
+
+    <script>
+        const gridSize = 4;
+        let tiles = [];
+        let emptyIndex = 15;
+        let moves = 0;
+        let solved = false;
+        
+        const colors = [
+            '#e74c3c', '#e67e22', '#f1c40f', '#2ecc71',
+            '#1abc9c', '#3498db', '#9b59b6', '#e91e63',
+            '#ff5722', '#795548', '#607d8b', '#00bcd4',
+            '#8bc34a', '#ffeb3b', '#ff9800'
+        ];
+        
+        function init() {
+            // Create solved state
+            tiles = Array.from({length: gridSize * gridSize}, (_, i) => i);
+            tiles[tiles.length - 1] = -1; // Empty tile
+            emptyIndex = 15;
+            shufflePuzzle();
+        }
+        
+        function shufflePuzzle() {
+            // Reset state
+            tiles = Array.from({length: gridSize * gridSize}, (_, i) => i + 1);
+            tiles[tiles.length - 1] = 0; // Empty tile (0)
+            emptyIndex = 15;
+            moves = 0;
+            solved = false;
+            
+            // Make many random valid moves
+            for (let i = 0; i < 1000; i++) {
+                const validMoves = getValidMoves();
+                const randomMove = validMoves[Math.floor(Math.random() * validMoves.length)];
+                moveTile(randomMove, false);
+            }
+            
+            moves = 0;
+            updateDisplay();
+        }
+        
+        function getValidMoves() {
+            const moves = [];
+            const row = Math.floor(emptyIndex / gridSize);
+            const col = emptyIndex % gridSize;
+            
+            if (row > 0) moves.push(emptyIndex - gridSize); // Up
+            if (row < gridSize - 1) moves.push(emptyIndex + gridSize); // Down
+            if (col > 0) moves.push(emptyIndex - 1); // Left
+            if (col < gridSize - 1) moves.push(emptyIndex + 1); // Right
+            
+            return moves;
+        }
+        
+        function moveTile(index, countMove = true) {
+            const validMoves = getValidMoves();
+            if (!validMoves.includes(index)) return false;
+            
+            // Swap
+            [tiles[emptyIndex], tiles[index]] = [tiles[index], tiles[emptyIndex]];
+            emptyIndex = index;
+            
+            if (countMove) {
+                moves++;
+                checkWin();
+                updateDisplay();
+            }
+            return true;
+        }
+        
+        function checkWin() {
+            solved = true;
+            for (let i = 0; i < gridSize * gridSize - 1; i++) {
+                if (tiles[i] !== i + 1) {
+                    solved = false;
+                    break;
+                }
+            }
+        }
+        
+        function updateDisplay() {
+            document.getElementById('moveCount').textContent = moves;
+            document.getElementById('status').textContent = solved ? '🎉 Solved!' : '';
+            
+            const puzzle = document.getElementById('puzzle');
+            puzzle.innerHTML = '';
+            
+            tiles.forEach((num, index) => {
+                const tile = document.createElement('div');
+                tile.className = 'tile' + (num === 0 ? ' empty' : '');
+                
+                if (num !== 0) {
+                    tile.textContent = num;
+                    tile.style.backgroundColor = colors[(num - 1) % colors.length];
+                    
+                    tile.onclick = () => {
+                        if (!solved) {
+                            moveTile(index);
+                        }
+                    };
+                }
+                
+                puzzle.appendChild(tile);
+            });
+        }
+        
+        // Initialize
+        init();
+    </script>
+</body>
+</html>
+

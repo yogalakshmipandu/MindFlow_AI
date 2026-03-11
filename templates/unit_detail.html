@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+
+{% block title %}{{ unit.name }} - MindFlow{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Home Button -->
+    <a href="{% url 'dashboard' %}" class="home-btn">🏠 Home</a>
+    
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <a href="{% url 'dashboard' %}">Dashboard</a> > 
+        <a href="{% url 'syllabus_detail' unit.syllabus.id %}">{{ unit.syllabus.title }}</a> > 
+        <span>{{ unit.name }}</span>
+    </div>
+    
+    <!-- Unit Header -->
+    <div class="unit-header">
+        <h1>{{ unit.name }}</h1>
+        <p class="unit-description">{{ unit.content|truncatewords:50 }}</p>
+    </div>
+    
+    <!-- Topics Section -->
+    <div class="topics-section">
+        <div class="section-header">
+            <h2>Topics</h2>
+            <div class="topic-actions">
+                <button class="btn btn-add" onclick="showAddTopicForm()">➕ Add Topic</button>
+                <form method="post" action="{% url 'extract_topics' unit.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-extract">
+                        ✨ Extract Topics with AI
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Add Topic Form -->
+        <div id="addTopicForm" class="add-topic-form" style="display: none;">
+            <form method="post" action="{% url 'add_topic' unit.id %}">
+                {% csrf_token %}
+                <input type="text" name="topic_name" placeholder="Enter topic name" required>
+                <button type="submit" class="btn">Add</button>
+                <button type="button" class="btn btn-secondary" onclick="hideAddTopicForm()">Cancel</button>
+            </form>
+        </div>
+        
+        {% if topics %}
+            <div class="topics-grid">
+                {% for topic in topics %}
+                <div class="topic-card">
+                    <a href="{% url 'topic_detail' topic.id %}" class="topic-link">
+                        <span class="topic-icon">📝</span>
+                        <span class="topic-name">{{ topic.name }}</span>
+                        <span class="topic-links-count">{{ topic.links.count }} links</span>
+                    </a>
+                    <div class="topic-actions-btns">
+                        <button class="btn-icon" onclick="showEditTopicForm({{ topic.id }})" title="Edit">✏️</button>
+                        <a href="{% url 'delete_topic' topic.id %}" class="btn-icon" title="Delete" onclick="return confirm('Are you sure?')">🗑️</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <p>No topics extracted yet.</p>
+                <p>Click "Add Topic" or "Extract Topics with AI" to add topics to this unit.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .home-btn {
+        display: inline-block;
+        background: #22c55e;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        margin-bottom: 20px;
+    }
+    
+    .home-btn:hover {
+        background: #16a34a;
+    }
+    
+    .breadcrumb {
+        margin-bottom: 20px;
+        color: #666;
+    }
+    
+    .breadcrumb a {
+        color: #4a90e2;
+        text-decoration: none;
+    }
+    
+    .unit-header {
+        margin-bottom: 40px;
+    }
+    
+    .unit-header h1 {
+        color: #333;
+        font-size: 32px;
+    }
+    
+    .unit-description {
+        color: #666;
+        margin-top: 10px;
+        line-height: 1.6;
+    }
+    
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+    
+    .section-header h2 {
+        color: #333;
+    }
+    
+    .btn-extract {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+    }
+    
+    .topics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 15px;
+    }
+    
+    .topic-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        text-decoration: none;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .topic-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    }
+    
+    .topic-icon {
+        font-size: 24px;
+    }
+    
+    .topic-name {
+        flex: 1;
+        color: #333;
+        font-weight: 500;
+    }
+    
+    .topic-links-count {
+        color: #888;
+        font-size: 12px;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px;
+        background: white;
+        border-radius: 12px;
+        color: #666;
+    }
+    
+    .topic-actions {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .btn-add {
+        background: #28a745;
+    }
+    
+    .add-topic-form {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+    
+    .add-topic-form input {
+        padding: 10px;
+        border: 2px solid #4a90e2;
+        border-radius: 6px;
+        font-size: 14px;
+        width: 300px;
+        margin-right: 10px;
+    }
+    
+    .topic-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .topic-link {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .topic-actions-btns {
+        display: flex;
+        gap: 5px;
+    }
+    
+    .btn-icon {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        opacity: 0.6;
+        transition: opacity 0.3s;
+        padding: 5px;
+    }
+    
+    .btn-icon:hover {
+        opacity: 1;
+    }
+</style>
+
+<script>
+    function showAddTopicForm() {
+        document.getElementById('addTopicForm').style.display = 'block';
+    }
+    
+    function hideAddTopicForm() {
+        document.getElementById('addTopicForm').style.display = 'none';
+    }
+    
+    function showEditTopicForm(topicId) {
+        var card = document.querySelector('.topic-card');
+        var formHtml = '<div class="edit-topic-form" style="display: block; width: 100%; padding: 15px; background: #f8f9fa; border-radius: 8px;">';
+        formHtml += '<form method="post" action="/topic/' + topicId + '/edit/">';
+        formHtml += '{% csrf_token %}';
+        formHtml += '<input type="text" name="topic_name" value="" placeholder="Enter new topic name" required style="padding: 8px; border: 2px solid #4a90e2; border-radius: 6px; width: 200px; margin-right: 10px;">';
+        formHtml += '<button type="submit" class="btn">Save</button>';
+        formHtml += '<button type="button" class="btn btn-secondary" onclick="location.reload()">Cancel</button>';
+        formHtml += '</form></div>';
+        
+        // Create a temporary element to show the edit form
+        var tempDiv = document.createElement('div');
+        tempDiv.innerHTML = formHtml;
+        tempDiv.style.cssText = 'grid-column: 1 / -1; margin-bottom: 10px;';
+        
+        var grid = document.querySelector('.topics-grid');
+        grid.insertBefore(tempDiv.firstChild, grid.firstChild);
+    }
+</script>
+{% endblock %}
+
