@@ -3,19 +3,22 @@ from django.contrib.auth import login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .forms import SignUpForm, LoginForm
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login
+from django.shortcuts import render, redirect
+
 
 def signup_view(request):
     if request.method == "POST":
         form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
-            print("USER CREATED:", user.username)
-            login(request, user)
-            return redirect("dashboard")
+            login(request, user)  # Automatically log in the user
+            return redirect("dashboard")  # Change to your dashboard URL name
         else:
-            print("FORM ERRORS:", form.errors)  # 🔥 IMPORTANT
+            print("FORM ERRORS:", form.errors)  # Debug form errors
     else:
-        form = UserCreationForm()
+        form = SignUpForm()
 
     return render(request, "signup.html", {"form": form})
 
