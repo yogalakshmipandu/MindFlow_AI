@@ -66,6 +66,7 @@ A Django-based educational web application designed to help students focus, mana
 
 5. **Run migrations:**
    ```bash
+   python manage.py makemigrations
    python manage.py migrate
    ```
 

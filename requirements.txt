@@ -1,9 +1,6 @@
 # Django
 Django>=5.0,<6.0
 
-# Database
-django-db-gevent
-
 # Python-dotenv
 python-dotenv
 
@@ -28,4 +25,6 @@ faiss-cpu>=1.7.0
 # Utilities
 numpy>=1.24.0
 
-beautifulsoup4
+reportlab>=4.0.0
+
+psycopg2-binary>=2.9.0

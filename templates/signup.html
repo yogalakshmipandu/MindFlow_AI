@@ -6,214 +6,120 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up - MindFlow</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
 
+    <style>
         body {
+            font-family: Arial;
             background: #f5f5f5;
-            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            height: 100vh;
         }
 
-        .signup-container {
-            width: 100%;
-            max-width: 450px;
-            padding: 20px;
-        }
-
-        .signup-box {
+        .box {
             background: white;
-            padding: 50px;
-            border-radius: 16px;
-            box-shadow: 0 4px 25px rgba(0,0,0,0.1);
+            padding: 30px;
+            width: 350px;
+            border-radius: 10px;
         }
 
-        .signup-box h2 {
-            text-align: center;
-            color: #000;
-            margin-bottom: 10px;
-            font-size: 28px;
-        }
-
-        .signup-box .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-        }
-
-        /* Messages styling */
-        .message {
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: center;
-            font-size: 14px;
-        }
-
-        .error-message {
-            background: #fee2e2;
-            color: #dc2626;
-            border: 1px solid #fecaca;
-        }
-
-        .success-message {
-            background: #d1fae5;
-            color: #065f46;
-            border: 1px solid #a7f3d0;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #333;
-        }
-
-        .form-group input {
+        input {
             width: 100%;
-            padding: 14px;
-            border: 2px solid #dcdcdc;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: border-color 0.3s;
+            padding: 10px;
+            margin-top: 8px;
+            margin-bottom: 15px;
         }
 
-        .form-group input:focus {
-            outline: none;
-            border-color: #000;
-        }
-
-        .form-group input.error {
-            border-color: #dc2626;
-        }
-
-        /* Form errors */
-        .form-errors {
-            background: #fee2e2;
-            color: #dc2626;
-            padding: 8px;
-            border-radius: 6px;
-            margin-top: 5px;
+        .error {
+            color: red;
             font-size: 13px;
-            display: none;
         }
 
-        .form-group.has-error .form-errors {
-            display: block;
-        }
-
-        .btn {
+        button {
             width: 100%;
-            padding: 14px;
-            background: #000;
+            padding: 12px;
+            background: black;
             color: white;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.3s;
-            margin-top: 10px;
-        }
-
-        .btn:hover:not(:disabled) {
-            background: #333;
-        }
-
-        .login-link {
-            text-align: center;
-            margin-top: 20px;
-            color: #666;
-        }
-
-        .login-link a {
-            color: #000;
-            font-weight: 600;
-            text-decoration: none;
-        }
-
-        .login-link a:hover {
-            text-decoration: underline;
         }
     </style>
 </head>
+
 <body>
-    <div class="signup-container">
-        <div class="signup-box">
-            <h2>Get Started!</h2>
-            <p class="subtitle">Create your account and start learning</p>
-            
-            <!-- Django messages -->
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="message {{ message.tags }}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
-            
-            <form method="post">
-                {% csrf_token %}
-                {{ form.non_field_errors }}
-                
-                <div class="form-group {% if form.username.errors %}has-error{% endif %}">
-                    <label for="{{ form.username.id_for_label }}">Username</label>
-                    {{ form.username }}
-                    {% if form.username.errors %}
-                        <div class="form-errors">
-                            {{ form.username.errors.0 }}
-                        </div>
-                    {% endif %}
-                </div>
-                
-                <div class="form-group {% if form.email.errors %}has-error{% endif %}">
-                    <label for="{{ form.email.id_for_label }}">Email Address</label>
-                    {{ form.email }}
-                    {% if form.email.errors %}
-                        <div class="form-errors">
-                            {{ form.email.errors.0 }}
-                        </div>
-                    {% endif %}
-                </div>
-                
-                <div class="form-group {% if form.password1.errors %}has-error{% endif %}">
-                    <label for="{{ form.password1.id_for_label }}">Password</label>
-                    {{ form.password1 }}
-                    {% if form.password1.errors %}
-                        <div class="form-errors">
-                            {{ form.password1.errors.0 }}
-                        </div>
-                    {% endif %}
-                </div>
-                
-                <div class="form-group {% if form.password2.errors %}has-error{% endif %}">
-                    <label for="{{ form.password2.id_for_label }}">Confirm Password</label>
-                    {{ form.password2 }}
-                    {% if form.password2.errors %}
-                        <div class="form-errors">
-                            {{ form.password2.errors.0 }}
-                        </div>
-                    {% endif %}
-                </div>
-                
-                <button type="submit" class="btn">Create Account</button>
-            </form>
-            
-            <p class="login-link">Already have an account? <a href="{% url 'login' %}">Sign in</a></p>
+
+<div class="box">
+    <h2>Signup</h2>
+
+    <!-- 🔥 Django backend errors -->
+    {% if form.errors %}
+        <div class="error">
+            {{ form.errors }}
         </div>
-    </div>
+    {% endif %}
+
+    <form method="POST" onsubmit="return validateForm()">
+        {% csrf_token %}
+
+        <label>Username</label>
+        <input type="text" name="username" id="username" required minlength="3">
+
+        <label>Password</label>
+        <input type="password" name="password1" id="password1" required minlength="8">
+
+        <label>Confirm Password</label>
+        <input type="password" name="password2" id="password2" required>
+
+        <!-- Frontend error -->
+        <div id="error-msg" class="error"></div>
+
+        <button type="submit">Create Account</button>
+    </form>
+</div>
+
+<script>
+function validateForm() {
+    let username = document.getElementById("username").value;
+    let password = document.getElementById("password1").value;
+    let confirm = document.getElementById("password2").value;
+    let error = document.getElementById("error-msg");
+
+    error.innerHTML = "";
+
+    // Username check
+    if (username.length < 3) {
+        error.innerHTML = "Username must be at least 3 characters";
+        return false;
+    }
+
+    // Password length
+    if (password.length < 8) {
+        error.innerHTML = "Password must be at least 8 characters";
+        return false;
+    }
+
+    // Not only numbers
+    if (/^\d+$/.test(password)) {
+        error.innerHTML = "Password cannot be only numbers";
+        return false;
+    }
+
+    // Common weak passwords
+    let weakPasswords = ["12345678", "password", "qwerty", "abc123"];
+    if (weakPasswords.includes(password.toLowerCase())) {
+        error.innerHTML = "Password is too common";
+        return false;
+    }
+
+    // Match check
+    if (password !== confirm) {
+        error.innerHTML = "Passwords do not match";
+        return false;
+    }
+
+    return true;
+}
+</script>
+
 </body>
 </html>
-

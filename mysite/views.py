@@ -51,6 +51,7 @@ def extract_units(text):
                 units[unit_name] = unit_content
     return units
 
+
 @login_required
 def dashboard_view(request):
     """Dashboard view showing upload form and user's syllabi."""
@@ -505,4 +506,3 @@ If the information is not in the context, say: "I cannot find this information i
 
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-

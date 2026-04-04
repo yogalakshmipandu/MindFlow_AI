@@ -5,16 +5,18 @@ from django.contrib.auth.decorators import login_required
 from .forms import SignUpForm, LoginForm
 
 def signup_view(request):
-    """Handle user registration."""
     if request.method == "POST":
         form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
+            print("USER CREATED:", user.username)
             login(request, user)
-            messages.success(request, "Registration successful!")
             return redirect("dashboard")
+        else:
+            print("FORM ERRORS:", form.errors)  # 🔥 IMPORTANT
     else:
-        form = SignUpForm()
+        form = UserCreationForm()
+
     return render(request, "signup.html", {"form": form})
 
 def login_view(request):

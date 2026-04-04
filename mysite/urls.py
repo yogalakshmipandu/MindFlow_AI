@@ -11,6 +11,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("accounts.urls")),  
     path("", include("syllabus.urls")),
+    path("dashboard/", views.dashboard_view, name="dashboard"),
     path("focus/", views.focus_view, name="focus"),
     path("game/fireball/", views.game_fireball, name="game_fireball"),
     path("game/sliding/", views.game_sliding, name="game_sliding"),
@@ -31,4 +32,3 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
