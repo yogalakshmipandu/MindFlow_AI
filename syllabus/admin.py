@@ -6,4 +6,3 @@ admin.site.register(Syllabus)
 admin.site.register(Unit)
 admin.site.register(Topic)
 admin.site.register(TopicLink)
-

@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "accounts",
     "syllabus",
+    "mysite",
 ]
 
 MIDDLEWARE = [
@@ -83,5 +84,27 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# AI Keys
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+
+# Google Drive OAuth ⭐ NEW
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET", "")
+
+# Setup Instructions (remove after setup):
+"""
+🚀 GOOGLE DRIVE SETUP:
+
+1. Go to https://console.cloud.google.com/
+2. Create project → Enable Google Drive API
+3. Credentials → OAuth 2.0 → Web Application
+4. Authorized redirect: http://localhost:8000/drive/auth/callback/
+5. Download client_secrets.json → place in Backend/
+6. Add to .env:
+   GOOGLE_CLIENT_ID=your_client_id
+   GOOGLE_CLIENT_SECRET=your_client_secret
+
+7. pip install -r requirements.txt
+8. Login → Visit /drive/auth/ → Authorize
+"""
 

@@ -4,8 +4,26 @@ Views for mysite project.
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
 import fitz
 import re
+import os
+import pickle
+import numpy as np
+import faiss
+from docx import Document
+from PyPDF2 import PdfReader
+from langchain_community.document_loaders import WebBaseLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.vectorstores import FAISS
+from langchain_community.docstore.in_memory import InMemoryDocstore
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnablePassthrough
+from langchain_core.output_parsers import StrOutputParser
+from langchain_groq import ChatGroq
+from groq import Groq
+import json
 
 def extract_text_from_pdf(file):
     """Extract text from PDF file using PyMuPDF."""
@@ -122,19 +140,19 @@ def documents_view(request):
     
     if request.method == 'POST':
         title = request.POST.get('title')
-        document = request.FILES.get('document')
-        document_type = request.POST.get('document_type')
+        document_file = request.FILES.get('document')
+        document_type = request.POST.get('document_type', 'other')
         
-        if title and document:
-            doc = Document.objects.create(
+        if title and document_file:
+            Document.objects.create(
                 user=request.user,
                 title=title,
-                file=document,
+                file=document_file,
                 document_type=document_type
             )
-            return redirect('documents')
+            # Model save() handles Drive upload automatically
     
-    # Get all documents and syllabi for the user
+    # Get all documents and syllabi for the user (uses file_url property)
     documents = Document.objects.filter(user=request.user).order_by('-uploaded_at')
     syllabi = Syllabus.objects.filter(user=request.user).order_by('-uploaded_at')
     
@@ -150,8 +168,7 @@ def delete_document(request, doc_id):
     
     try:
         doc = Document.objects.get(id=doc_id, user=request.user)
-        doc.file.delete()
-        doc.delete()
+        doc.delete()  # post_delete signal cleans local file
     except Document.DoesNotExist:
         pass
     
@@ -191,19 +208,6 @@ def ai_prep_view(request):
 @csrf_exempt
 def process_ai_prep_input(request):
     """API endpoint to process input data (Link, PDF, Text, DOCX, TXT) and create vectorstore."""
-    from django.http import JsonResponse
-    import faiss
-    import numpy as np
-    from docx import Document
-    from PyPDF2 import PdfReader
-    from langchain_community.document_loaders import WebBaseLoader
-    from langchain_text_splitters import RecursiveCharacterTextSplitter
-    from langchain_community.embeddings import HuggingFaceEmbeddings
-    from langchain_community.vectorstores import FAISS
-    from langchain_community.docstore.in_memory import InMemoryDocstore
-    import os
-    import pickle
-
     if request.method != 'POST':
         return JsonResponse({'error': 'Only POST method allowed'}, status=405)
 
@@ -329,11 +333,6 @@ def chatbot_view(request):
 @csrf_exempt
 def chatbot_chat(request):
     """API endpoint for chatbot conversation."""
-    from django.http import JsonResponse
-    from groq import Groq
-    import os
-    import json
-
     if request.method != 'POST':
         return JsonResponse({'error': 'Only POST method allowed'}, status=405)
 
@@ -405,17 +404,6 @@ IMPORTANT RULES:
 @csrf_exempt
 def ai_prep_qa(request):
     """API endpoint to answer questions using the vectorstore."""
-    from django.http import JsonResponse
-    from langchain_core.prompts import ChatPromptTemplate
-    from langchain_core.runnables import RunnablePassthrough
-    from langchain_core.output_parsers import StrOutputParser
-    from langchain_community.embeddings import HuggingFaceEmbeddings
-    from langchain_community.vectorstores import FAISS
-    from langchain_groq import ChatGroq
-    import os
-    import pickle
-    import numpy as np
-
     if request.method != 'POST':
         return JsonResponse({'error': 'Only POST method allowed'}, status=405)
 

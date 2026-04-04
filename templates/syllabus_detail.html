@@ -13,9 +13,12 @@
     </div>
     
     <!-- Syllabus Header -->
-    <div class="syllabus-header">
+<div class="syllabus-header">
         <h1>{{ syllabus.title }}</h1>
-        <p class="syllabus-meta">Uploaded: {{ syllabus.uploaded_at|date:"F d, Y" }}</p>
+        <p class="syllabus-meta">Uploaded: {{ syllabus.uploaded_at|date:"F d, Y" }} | <a href="{{ syllabus.file_url }}" target="_blank">📎 Syllabus File</a> {% if syllabus.google_drive_url %} (Drive){% endif %}</p>
+        {% if syllabus.google_drive_url %}
+        <a href="{% url 'export_syllabus_excel' syllabus.id %}" class="btn btn-excel">📊 Export Excel to Drive</a>
+        {% endif %}
     </div>
     
     <!-- Units Section -->

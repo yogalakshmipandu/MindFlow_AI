@@ -49,6 +49,27 @@
             margin-bottom: 30px;
         }
 
+        /* Messages styling */
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .success-message {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
         .form-group {
             margin-bottom: 20px;
         }
@@ -74,6 +95,25 @@
             border-color: #000;
         }
 
+        .form-group input.error {
+            border-color: #dc2626;
+        }
+
+        /* Form errors */
+        .form-errors {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 8px;
+            border-radius: 6px;
+            margin-top: 5px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .form-group.has-error .form-errors {
+            display: block;
+        }
+
         .btn {
             width: 100%;
             padding: 14px;
@@ -88,7 +128,7 @@
             margin-top: 10px;
         }
 
-        .btn:hover {
+        .btn:hover:not(:disabled) {
             background: #333;
         }
 
@@ -115,20 +155,59 @@
             <h2>Get Started!</h2>
             <p class="subtitle">Create your account and start learning</p>
             
-            <form method="post" action="{% url 'signup' %}">
+            <!-- Django messages -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="message {{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            <form method="post">
                 {% csrf_token %}
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" name="username" id="username" required placeholder="Choose a username">
+                {{ form.non_field_errors }}
+                
+                <div class="form-group {% if form.username.errors %}has-error{% endif %}">
+                    <label for="{{ form.username.id_for_label }}">Username</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                        <div class="form-errors">
+                            {{ form.username.errors.0 }}
+                        </div>
+                    {% endif %}
                 </div>
-                <div class="form-group">
-                    <label for="password1">Password</label>
-                    <input type="password" name="password1" id="password1" required placeholder="Create a password">
+                
+                <div class="form-group {% if form.email.errors %}has-error{% endif %}">
+                    <label for="{{ form.email.id_for_label }}">Email Address</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <div class="form-errors">
+                            {{ form.email.errors.0 }}
+                        </div>
+                    {% endif %}
                 </div>
-                <div class="form-group">
-                    <label for="password2">Confirm Password</label>
-                    <input type="password" name="password2" id="password2" required placeholder="Confirm your password">
+                
+                <div class="form-group {% if form.password1.errors %}has-error{% endif %}">
+                    <label for="{{ form.password1.id_for_label }}">Password</label>
+                    {{ form.password1 }}
+                    {% if form.password1.errors %}
+                        <div class="form-errors">
+                            {{ form.password1.errors.0 }}
+                        </div>
+                    {% endif %}
                 </div>
+                
+                <div class="form-group {% if form.password2.errors %}has-error{% endif %}">
+                    <label for="{{ form.password2.id_for_label }}">Confirm Password</label>
+                    {{ form.password2 }}
+                    {% if form.password2.errors %}
+                        <div class="form-errors">
+                            {{ form.password2.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+                
                 <button type="submit" class="btn">Create Account</button>
             </form>
             

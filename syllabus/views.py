@@ -45,13 +45,40 @@ def extract_units(text):
                 units[unit_name] = unit_content
     return units
 
-def extract_topics_with_llm(unit_text):
-    """Extract topics from unit text using LLM."""
-    prompt = f"""
-Extract topic names from the syllabus text below.
-Return ONLY a JSON array of topic names, nothing else.
+# def extract_topics_with_llm(unit_text):
+#     """Extract topics from unit text using LLM."""
+#     prompt = f"""
+# Extract topic names from the syllabus text below.
+# Return ONLY a JSON array of topic names, nothing else.
 
-Example format: ["Topic 1", "Topic 2", "Topic 3"]
+# Example format: ["Topic 1", "Topic 2", "Topic 3"]
+
+# Text:
+# {unit_text[:3000]}
+# """
+#     try:
+#         response = client.chat.completions.create(
+#             model="llama-3.1-8b-instant",
+#             messages=[
+#                 {"role": "system", "content": "You extract syllabus topics as a JSON array."},
+#                 {"role": "user", "content": prompt}
+#             ],
+#             temperature=0
+#         )
+#         content = response.choices[0].message.content.strip()
+#         # Try to parse JSON array
+#         topics = json.loads(content)
+#         return topics if isinstance(topics, list) else []
+#     except Exception as e:
+#         print(f"Error extracting topics: {e}")
+#         return []
+
+
+def extract_topics_with_llm(unit_text):
+    prompt = f"""
+Extract only topic names from this syllabus.
+
+Return ONLY a JSON array.
 
 Text:
 {unit_text[:3000]}
@@ -60,19 +87,27 @@ Text:
         response = client.chat.completions.create(
             model="llama-3.1-8b-instant",
             messages=[
-                {"role": "system", "content": "You extract syllabus topics as a JSON array."},
+                {"role": "system", "content": "Return only JSON array of topics."},
                 {"role": "user", "content": prompt}
             ],
             temperature=0
         )
+
         content = response.choices[0].message.content.strip()
-        # Try to parse JSON array
-        topics = json.loads(content)
-        return topics if isinstance(topics, list) else []
+        print("RAW RESPONSE:", content)
+
+        match = re.search(r'\[.*\]', content, re.DOTALL)
+        if match:
+            topics = json.loads(match.group())
+            return topics if isinstance(topics, list) else []
+
+        return []
+
     except Exception as e:
         print(f"Error extracting topics: {e}")
         return []
 
+        
 @login_required
 def upload_syllabus(request):
     """Handle syllabus PDF upload and extraction."""
@@ -337,5 +372,4 @@ def delete_topic_document(request, doc_id):
     doc.delete()
     messages.success(request, "Document deleted!")
     return redirect("topic_detail", topic_id=topic_id)
-
 

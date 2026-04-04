@@ -15,7 +15,7 @@
 
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #060606 0%, #9e4fed 100%);
             min-height: 100vh;
             overflow-x: hidden;
         }
@@ -306,8 +306,9 @@
         <ul class="nav-links">
             <li><a href="#features">Features</a></li>
             <li><a href="#about">About</a></li>
-            <li><a href="{% url 'login' %}">Login</a></li>
-        </ul>
+<a href="/accounts/login/">Login</a>
+
+</ul>
     </nav>
 
     <!-- Hero Section -->
@@ -358,9 +359,10 @@
 
         <!-- CTA Buttons -->
         <div class="cta-buttons">
-            <a href="{% url 'signup' %}" class="btn-ready">I'm Ready! 🚀</a>
-            <a href="{% url 'login' %}" class="btn-login">Login</a>
+            <a href="/accounts/signup/" class="btn-ready">I'm Ready! 🚀</a>
+            <a href="/accounts/login/" class="btn-login">Login</a>
         </div>
+
 
         <!-- Motivational Quote -->
         <div class="quote-section">

@@ -49,15 +49,25 @@
             margin-bottom: 30px;
         }
 
-        /* Error message styling */
-        .error-message {
-            background: #fee2e2;
-            color: #dc2626;
+        /* Messages styling */
+        .message {
             padding: 12px;
             border-radius: 8px;
             margin-bottom: 20px;
             text-align: center;
             font-size: 14px;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .success-message {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
         }
 
         .form-group {
@@ -85,6 +95,25 @@
             border-color: #000;
         }
 
+        .form-group input.error {
+            border-color: #dc2626;
+        }
+
+        /* Form errors */
+        .form-errors {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 8px;
+            border-radius: 6px;
+            margin-top: 5px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .form-group.has-error .form-errors {
+            display: block;
+        }
+
         .btn {
             width: 100%;
             padding: 14px;
@@ -99,7 +128,7 @@
             margin-top: 10px;
         }
 
-        .btn:hover {
+        .btn:hover:not(:disabled) {
             background: #333;
         }
 
@@ -126,31 +155,48 @@
             <h2>Welcome Back!</h2>
             <p class="subtitle">Sign in to continue your learning journey</p>
             
-            <!-- Error messages displayed on same page -->
+            <!-- Django messages -->
             {% if messages %}
                 {% for message in messages %}
-                    {% if 'error' in message.tags or message.level == 40 %}
-                        <div class="error-message">{{ message }}</div>
-                    {% endif %}
+                    <div class="message {{ message.tags }}">
+                        {{ message }}
+                    </div>
                 {% endfor %}
             {% endif %}
             
-            <form method="post" action="{% url 'login' %}">
+            <form method="post">
                 {% csrf_token %}
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" name="username" id="username" required placeholder="Enter your username">
+                {{ form.non_field_errors }}
+                
+                <div class="form-group {% if form.username.errors %}has-error{% endif %}">
+                    <label for="{{ form.username.id_for_label }}">Username or Email</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                        <div class="form-errors">
+                            {{ form.username.errors.0 }}
+                        </div>
+                    {% endif %}
                 </div>
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" name="password" id="password" required placeholder="Enter your password">
+                
+                <div class="form-group {% if form.password.errors %}has-error{% endif %}">
+                    <label for="{{ form.password.id_for_label }}">Password</label>
+                    {{ form.password }}
+                    {% if form.password.errors %}
+                        <div class="form-errors">
+                            {{ form.password.errors.0 }}
+                        </div>
+                    {% endif %}
                 </div>
+                
                 <button type="submit" class="btn">Sign In</button>
             </form>
             
-            <p class="signup-link">Don't have an account? <a href="{% url 'signup' %}">Sign up</a></p>
+            <div class="signup-link">
+                Don't have an account? <a href="{% url 'signup' %}">Sign Up</a>
+            </div>
         </div>
     </div>
 </body>
 </html>
+
 

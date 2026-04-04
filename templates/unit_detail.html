@@ -26,12 +26,14 @@
             <h2>Topics</h2>
             <div class="topic-actions">
                 <button class="btn btn-add" onclick="showAddTopicForm()">➕ Add Topic</button>
+                {% if can_ai_extract %}
                 <form method="post" action="{% url 'extract_topics' unit.id %}">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-extract">
                         ✨ Extract Topics with AI
                     </button>
                 </form>
+                {% endif %}
             </div>
         </div>
         
