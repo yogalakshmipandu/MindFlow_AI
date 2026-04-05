@@ -20,7 +20,17 @@ class LoginForm(forms.Form):
         password = self.cleaned_data.get('password')
 
         if username and password:
-            self.user_cache = authenticate(username=username.strip().lower(), password=password)
+            username = username.strip()
+            self.user_cache = authenticate(username=username, password=password)
+            if self.user_cache is None and '@' in username:
+                try:
+                    user = User.objects.get(email__iexact=username)
+                except User.DoesNotExist:
+                    user = None
+
+                if user is not None:
+                    self.user_cache = authenticate(username=user.username, password=password)
+
             if self.user_cache is None:
                 raise forms.ValidationError('Invalid username/email or password')
             return self.cleaned_data

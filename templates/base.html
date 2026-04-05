@@ -87,6 +87,13 @@
             color: #fff;
         }
         
+        .nav-links .username {
+            color: #666;
+            font-weight: 500;
+            font-size: 14px;
+            padding: 8px 12px;
+        }
+        
         /* Main content */
         .container {
             max-width: 1100px;
@@ -312,13 +319,15 @@
         </div>
         <ul class="nav-links">
             {% if user.is_authenticated %}
+                <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
                 <li><a href="{% url 'ai_prep' %}">AI Prep</a></li>
-                <li><a href="{% url 'dashboard' %}?chatbot=open">Chatbot</a></li>
-                <li><a href="{% url 'documents' %}">All Documents</a></li>
-                <li><a href="{% url 'todo' %}">To Do</a></li>
+                <li><a href="{% url 'dashboard' %}?chatbot=open">Bestie</a></li>
                 <li><a href="{% url 'focus' %}">Focus</a></li>
+                <li><a href="{% url 'documents' %}">Documents</a></li>
+                <li><a href="{% url 'todo' %}">ToDo</a></li>
                 <li><a href="{% url 'profile' %}">Profile</a></li>
-                <li><a href="{% url 'logout' %}" class="btn-signout">Sign Out</a></li>
+                <li><span class="username">{{ user.username }}</span></li>
+                <li><a href="{% url 'logout' %}" class="btn-signout">Logout</a></li>
             {% else %}
                 <li><a href="{% url 'login' %}">Login</a></li>
                 <li><a href="{% url 'signup' %}">Sign Up</a></li>
@@ -351,11 +360,21 @@
         <button onclick="musicManager.stop()">⏹️</button>
     </div>
     
+    <script>
+        window.isAuthenticated = {{ user.is_authenticated|yesno:"true,false" }};
+    </script>
+    <script>
+      if (window.isAuthenticated === false || window.isAuthenticated === 'false') {
+        const keys = ['drowsyState', 'focusState', 'musicState'];
+        keys.forEach((key) => localStorage.removeItem(key));
+      }
+    </script>
     <!-- Global Scripts -->
     <script src="{% static 'js/music-manager.js' %}"></script>
     <script src="{% static 'js/focus-alarm.js' %}"></script>
+    <script src="{% static 'js/drowsy-manager.js' %}"></script>
     
-    
+    {% include 'includes/music_control_bar.html' %}
     {% block extra_js %}{% endblock %}
 </body>
 </html>

@@ -196,6 +196,13 @@
             </div>
         </div>
     </div>
+    <script>
+        (function() {
+            var keys = ['focusMusicState', 'focusAlarmState', 'motivationState', 'focusNotifications'];
+            keys.forEach(function(key) { localStorage.removeItem(key); });
+            window.isAuthenticated = false;
+        })();
+    </script>
     {% include 'includes/music_control_bar.html' %}
 </body>
 </html>

@@ -2,10 +2,25 @@ class FocusNotificationManager {
   constructor() {
     this.storageKey = 'focusNotifications';
     this.toastTimeout = null;
+    this.isAuthenticatedUser = this.checkAuthentication();
     this.init();
   }
 
+  checkAuthentication() {
+    if (typeof window !== 'undefined' && typeof window.isAuthenticated !== 'undefined') {
+      return window.isAuthenticated === true || window.isAuthenticated === 'true';
+    }
+    return document.getElementById('musicControlBar') !== null;
+  }
+
   init() {
+    // Only initialize for authenticated users
+    if (!this.isAuthenticatedUser) {
+      // Clear localStorage for non-authenticated users
+      localStorage.removeItem(this.storageKey);
+      return;
+    }
+
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission().catch(() => {});
     }
@@ -18,6 +33,8 @@ class FocusNotificationManager {
   }
 
   showNotification(data) {
+    if (!this.isAuthenticatedUser) return;
+    
     if (data.type === 'alarm') {
       if ('Notification' in window && Notification.permission === 'granted') {
         this.showSystemNotification(data.title, data.message);
@@ -125,6 +142,7 @@ class FocusSessionAlarm {
   constructor() {
     this.storageKey = 'focusAlarmState';
     this.notificationKey = 'focusNotifications';
+    this.isAuthenticatedUser = this.checkAuthentication();
     this.state = {
       isActive: false,
       isPaused: false,
@@ -147,7 +165,22 @@ class FocusSessionAlarm {
     this.init();
   }
 
+  checkAuthentication() {
+    if (typeof window !== 'undefined' && typeof window.isAuthenticated !== 'undefined') {
+      return window.isAuthenticated === true || window.isAuthenticated === 'true';
+    }
+    return document.getElementById('musicControlBar') !== null;
+  }
+
   init() {
+    // Only initialize for authenticated users
+    if (!this.isAuthenticatedUser) {
+      // Clear localStorage for non-authenticated users
+      localStorage.removeItem(this.storageKey);
+      localStorage.removeItem(this.notificationKey);
+      return;
+    }
+
     this.loadState();
     if (this.state.isActive && !this.state.isPaused) {
       this.startTimer();
@@ -193,6 +226,7 @@ class FocusSessionAlarm {
   }
 
   saveState() {
+    if (!this.isAuthenticatedUser) return;
     localStorage.setItem(this.storageKey, JSON.stringify(this.state));
   }
 
@@ -216,6 +250,8 @@ class FocusSessionAlarm {
   }
 
   startSession(totalStudySeconds, blockSeconds, breakSeconds) {
+    if (!this.isAuthenticatedUser) return;
+    
     this.state.isActive = true;
     this.state.isPaused = false;
     this.state.phase = 'study';
@@ -341,7 +377,7 @@ class FocusSessionAlarm {
   }
 
   pauseSession() {
-    if (!this.state.isActive) {
+    if (!this.state.isActive || !this.isAuthenticatedUser) {
       return;
     }
     this.state.isPaused = !this.state.isPaused;
@@ -351,11 +387,15 @@ class FocusSessionAlarm {
   }
 
   resetSession() {
+    if (!this.isAuthenticatedUser) return;
+    
     this.resetInternalState();
     this.broadcastNotification({ type: 'alarm', title: '⏹️ Session Reset', message: 'Your focus session has been reset.' });
   }
 
   broadcastNotification(data) {
+    if (!this.isAuthenticatedUser) return;
+    
     this.displayNotification(JSON.stringify(data));
     localStorage.setItem(this.notificationKey, JSON.stringify(Object.assign({}, data, { timestamp: Date.now() })));
   }
@@ -481,7 +521,21 @@ class MotivationManager {
     this.init();
   }
 
+  checkAuthentication() {
+    if (typeof window !== 'undefined' && typeof window.isAuthenticated !== 'undefined') {
+      return window.isAuthenticated === true || window.isAuthenticated === 'true';
+    }
+    return document.getElementById('musicControlBar') !== null;
+  }
+
   init() {
+    this.isAuthenticatedUser = this.checkAuthentication();
+    if (!this.isAuthenticatedUser) {
+      this.resetState();
+      localStorage.removeItem(this.notificationKey);
+      return;
+    }
+
     this.requestPermission();
     this.restoreState();
 

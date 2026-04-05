@@ -8,6 +8,7 @@ class MusicManager {
     this.volume = 0.5;
     this.isPlaying = false;
     this.storageKey = 'focusMusicState';
+    this.isAuthenticatedUser = this.checkAuthentication();
     this.musicFiles = {
       rain: '/static/music/rain.mp3',
       forest: '/static/music/forest.mp3',
@@ -18,7 +19,22 @@ class MusicManager {
     this.init();
   }
 
+  checkAuthentication() {
+    if (typeof window !== 'undefined' && typeof window.isAuthenticated !== 'undefined') {
+      return window.isAuthenticated === true || window.isAuthenticated === 'true';
+    }
+    // Fallback: check whether the music control bar exists in the DOM
+    return document.getElementById('musicControlBar') !== null;
+  }
+
   init() {
+    // Only initialize music features for authenticated users
+    if (!this.isAuthenticatedUser) {
+      // Clear localStorage for non-authenticated users
+      localStorage.removeItem(this.storageKey);
+      return;
+    }
+
     const saved = localStorage.getItem(this.storageKey);
     if (saved) {
       const state = JSON.parse(saved);
@@ -63,6 +79,8 @@ class MusicManager {
   }
 
   play(type, save = true) {
+    if (!this.isAuthenticatedUser) return;
+    
     const src = this.musicFiles[type];
     if (!src) return;
 
@@ -98,7 +116,7 @@ class MusicManager {
   }
 
   togglePause() {
-    if (!this.audio) return;
+    if (!this.audio || !this.isAuthenticatedUser) return;
 
     if (this.isPlaying) {
       this.audio.pause();
@@ -112,7 +130,7 @@ class MusicManager {
   }
 
   saveState() {
-    if (!this.audio) return;
+    if (!this.audio || !this.isAuthenticatedUser) return;
 
     const state = {
       src: this.audio.src,
@@ -129,7 +147,7 @@ class MusicManager {
     const label = document.getElementById('musicCurrentType');
     if (!bar || !label) return;
 
-    if (this.isPlaying && this.currentType) {
+    if (this.isPlaying && this.currentType && this.isAuthenticatedUser) {
       label.textContent = `🎵 ${this.currentType.charAt(0).toUpperCase() + this.currentType.slice(1)}`;
       bar.classList.add('show');
     } else {

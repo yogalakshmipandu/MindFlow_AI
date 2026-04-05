@@ -339,6 +339,19 @@
         // Initialize
         newGame();
     </script>
+    <script>
+        window.isAuthenticated = {{ user.is_authenticated|yesno:"true,false" }};
+    </script>
+    <script>
+      if (window.isAuthenticated === false || window.isAuthenticated === 'false') {
+        const keys = ['drowsyState', 'focusState', 'musicState'];
+        keys.forEach((key) => localStorage.removeItem(key));
+      }
+    </script>
+    <!-- Global Scripts -->
+    <script src="{% static 'js/music-manager.js' %}"></script>
+    <script src="{% static 'js/focus-alarm.js' %}"></script>
+    <script src="{% static 'js/drowsy-manager.js' %}"></script>
     {% include 'includes/music_control_bar.html' %}
 </body>
 </html>

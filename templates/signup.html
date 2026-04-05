@@ -129,6 +129,12 @@
 </div>
 
 <script>
+(function() {
+    var keys = ['focusMusicState', 'focusAlarmState', 'motivationState', 'focusNotifications'];
+    keys.forEach(function(key) { localStorage.removeItem(key); });
+    window.isAuthenticated = false;
+})();
+
 function validateForm() {
     let username = document.getElementById("username").value.trim();
     let email = document.getElementById("email").value.trim();

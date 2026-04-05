@@ -189,6 +189,72 @@
             background: #555555;
         }
 
+        /* Navbar */
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: white;
+            padding: 15px 50px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            position: relative;
+            z-index: 1000;
+        }
+
+        .navbar .logo img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+            transition: color 0.3s;
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+
+        .nav-links a:hover {
+            color: #000;
+            background: #f0f0f0;
+        }
+
+        .nav-links a.active {
+            color: #000;
+            font-weight: 600;
+        }
+
+        .nav-links .btn-signout {
+            background: #000;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .nav-links .btn-signout:hover {
+            background: #333;
+            color: #fff;
+        }
+
+        .nav-links .username {
+            color: #666;
+            font-weight: 500;
+            font-size: 14px;
+            padding: 8px 12px;
+        }
+
         .back-btn {
             position: absolute;
             top: 20px;
@@ -208,6 +274,24 @@
     </style>
 </head>
 <body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">
+            <img src="{% static 'images/logo.jpeg' %}" alt="MindFlow">
+        </div>
+        <ul class="nav-links">
+            <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li><a href="{% url 'ai_prep' %}">AI Prep</a></li>
+            <li><a href="{% url 'dashboard' %}?chatbot=open" class="active">Bestie</a></li>
+            <li><a href="{% url 'focus' %}">Focus</a></li>
+            <li><a href="{% url 'documents' %}">Documents</a></li>
+            <li><a href="{% url 'todo' %}">ToDo</a></li>
+            <li><a href="{% url 'profile' %}">Profile</a></li>
+            <li><span class="username">{{ user.username }}</span></li>
+            <li><a href="{% url 'logout' %}" class="btn-signout">Logout</a></li>
+        </ul>
+    </nav>
+
     <a href="{% url 'dashboard' %}" class="back-btn">← Back</a>
 
     <div class="chat-container">
@@ -334,6 +418,19 @@
             return cookieValue;
         }
     </script>
+    <script>
+        window.isAuthenticated = {{ user.is_authenticated|yesno:"true,false" }};
+    </script>
+    <script>
+      if (window.isAuthenticated === false || window.isAuthenticated === 'false') {
+        const keys = ['drowsyState', 'focusState', 'musicState'];
+        keys.forEach((key) => localStorage.removeItem(key));
+      }
+    </script>
+    <!-- Global Scripts -->
+    <script src="{% static 'js/music-manager.js' %}"></script>
+    <script src="{% static 'js/focus-alarm.js' %}"></script>
+    <script src="{% static 'js/drowsy-manager.js' %}"></script>
     {% include 'includes/music_control_bar.html' %}
 </body>
 </html>
