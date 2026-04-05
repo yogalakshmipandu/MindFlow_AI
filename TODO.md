@@ -1,32 +1,27 @@
-# Drowsiness Detection Persistence - COMPLETE ✅
-## Status: 100% Complete
+# Drowsy Widget Persistence Task
+Status: In Progress
 
-**All steps done:**
+## Approved Plan Steps
 
-### ✅ Step 1: SharedWorker created
-`static/js/drowsy-worker.js` - MediaPipe background processing
+### 1. ✅ PLANNING (Complete)
+- Analyzed files: drowsy-widget.js, focus.html, base.html, drowsy.html
+- Plan confirmed for widget activation from both focus launch and drowsy back-button
 
-### ✅ Step 2: drowsy.html updated
-Worker client + live stats display
+### 2. ⏳ EDIT templates/focus.html
+- Replace launch link with toggleDrowsyDetection() button
+- Add dynamic status text
 
-### ✅ Step 3: base.html integrated
-drowsy-client.js loaded everywhere + silent notifications
+### 3. ⏳ EDIT templates/drowsy.html
+- Replace back link with backToFocusWithWidget() button
+- Add JS function to start widget before navigating
 
-### ✅ Step 4: focus.html enhanced
-Toggle button + status + on-page alerts
+### 4. 🔍 TEST
+- Focus → Launch → Widget active → Navigate dashboard/todo → Persists
+- Drowsy page → Back to Focus → Widget starts → Navigates + persists
 
-### ✅ Step 5: Ready to test
-1. Visit `/focus/` → Drowsy Panel → Enable
-2. Switch to any tab (`/`, `/drowsy/`, etc.)
-3. Detection continues + notifications fire
-4. Works when tab backgrounded!
+### 5. 📦 DEPLOY
+- `python manage.py collectstatic`
+- Full browser test across pages
 
-### ⏳ Step 6: Git PR
-```
-Ready for `blackboxai/drowsiness-persistence` branch
-```
-
-**Result:** Drowsiness detection now works across ALL tabs/pages, even when switching away!
-
-**To demo:** `python manage.py runserver` → `/focus/` → Enable Drowsy → switch tabs
+**Next Action**: User approval to start Step 2 edits.
 
