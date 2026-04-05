@@ -6,29 +6,28 @@
 {% block extra_css %}
 <style>
     body {
-        font-family: Arial, sans-serif;
-        background: #0f172a;
-        color: white;
-        text-align: center;
+        font-family: 'Poppins', sans-serif;
+        background: #f5f5f5;
+        color: #333;
         min-height: 100vh;
     }
     
-    /* Override base.html background */
     .container {
-        max-width: 1200px;
+        max-width: 1100px;
         margin: 0 auto;
-        padding: 40px 20px;
+        padding: 30px 20px;
     }
     
     h1 {
-        margin: 20px;
-        color: white;
-        font-size: 36px;
+        margin: 20px 0;
+        color: #000;
+        font-size: 32px;
+        font-weight: 600;
     }
     
     /* FORM */
     .task-form {
-        margin: 20px;
+        margin: 20px 0;
         display: flex;
         justify-content: center;
         flex-wrap: wrap;
@@ -36,32 +35,35 @@
     }
     
     input, select, button {
-        padding: 12px 15px;
-        border: none;
-        border-radius: 8px;
-        margin: 5px;
+        padding: 10px 12px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
         font-size: 14px;
+        font-family: 'Poppins', sans-serif;
     }
     
     input[type="text"] {
-        width: 250px;
+        width: 200px;
     }
     
     input[type="date"] {
-        background: #334155;
-        color: white;
+        width: 140px;
+    }
+    select {
+        background: #fff;
+        color: #333;
     }
     
     button {
-        background: #22c55e;
-        color: white;
+        background: #000;
+        color: #fff;
         cursor: pointer;
         font-weight: 500;
         transition: background 0.3s;
     }
     
     button:hover {
-        background: #16a34a;
+        background: #333;
     }
     
     /* BOARD */
@@ -69,31 +71,40 @@
         display: flex;
         justify-content: center;
         gap: 20px;
-        padding: 20px;
+        padding: 20px 0;
         flex-wrap: wrap;
     }
     
     .column {
-        background: #1e293b;
+        background: #fff;
         padding: 15px;
-        width: 320px;
-        border-radius: 12px;
-        min-height: 450px;
+        width: 300px;
+        border-radius: 8px;
+        min-height: 400px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border: 1px solid #e0e0e0;
     }
     
     .column h2 {
-        margin-bottom: 20px;
-        font-size: 20px;
+        margin-bottom: 15px;
+        font-size: 18px;
+        color: #000;
+        font-weight: 600;
     }
     
     /* TASK CARD */
     .task {
-        background: #334155;
-        margin: 10px 0;
+        background: #f9f9f9;
+        margin: 8px 0;
         padding: 12px;
-        border-radius: 10px;
+        border-radius: 6px;
         text-align: left;
-        animation: fade 0.4s;
+        border: 1px solid #e0e0e0;
+        transition: box-shadow 0.3s;
+    }
+    
+    .task:hover {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     
     @keyframes fade {
@@ -102,13 +113,14 @@
     }
     
     .task-title {
-        font-weight: bold;
+        font-weight: 600;
         margin-bottom: 5px;
+        color: #000;
     }
     
     .task-date {
         font-size: 13px;
-        color: #94a3b8;
+        color: #666;
         margin-bottom: 8px;
     }
     
@@ -120,18 +132,19 @@
         font-size: 12px;
         text-transform: uppercase;
         font-weight: 500;
+        color: #fff;
     }
     
     .priority.high {
-        background: #ef4444;
+        background: #333;
     }
     
     .priority.medium {
-        background: #f59e0b;
+        background: #666;
     }
     
     .priority.low {
-        background: #22c55e;
+        background: #999;
     }
     
     .task-actions {
@@ -144,20 +157,24 @@
     .task-actions button {
         padding: 6px 10px;
         font-size: 11px;
-        background: #475569;
-        margin: 2px;
+        background: #666;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background 0.3s;
     }
     
     .task-actions button:hover {
-        background: #64748b;
+        background: #444;
     }
     
     .task-actions button.delete {
-        background: #ef4444;
+        background: #333;
     }
     
     .task-actions button.delete:hover {
-        background: #dc2626;
+        background: #000;
     }
     
     /* POPUP OVERLAY */
@@ -170,19 +187,19 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        background: rgba(0,0,0,0.6);
+        background: rgba(0,0,0,0.5);
         z-index: 1000;
     }
     
     /* POPUP BOX */
     .popup-content {
-        background: #1e293b;
-        padding: 30px;
-        border-radius: 12px;
+        background: #fff;
+        padding: 25px;
+        border-radius: 8px;
         text-align: center;
         width: 350px;
-        animation: popupAnimation 0.3s ease;
-        border: 2px solid #475569;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        border: 1px solid #e0e0e0;
     }
     
     .popup-content h3 {
@@ -191,8 +208,18 @@
     }
     
     .popup-content button {
-        background: #4a90e2;
-        margin-top: 15px;
+        background: #000;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background 0.3s;
+    }
+    
+    .popup-content button:hover {
+        background: #333;
     }
     
     .hidden {
@@ -213,7 +240,7 @@
     
     /* Empty state */
     .empty-message {
-        color: #64748b;
+        color: #666;
         font-size: 14px;
         padding: 20px;
     }
@@ -222,9 +249,9 @@
 
 {% block content %}
 <!-- Header with Home Button -->
-<div style="display: flex; justify-content: space-between; align-items: center; padding: 20px; max-width: 1200px; margin: 0 auto;">
-    <a href="{% url 'dashboard' %}" style="background: #22c55e; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 8px;">🏠 Home</a>
-    <h1 style="margin: 0;">🚀 Smart To-Do Board</h1>
+<div style="display: flex; justify-content: space-between; align-items: center; padding: 20px 0; max-width: 1100px; margin: 0 auto;">
+    <a href="{% url 'dashboard' %}" style="background: #000; color: #fff; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 8px;">🏠 Home</a>
+    <h1 style="margin: 0; color: #000;">🚀 Smart To-Do Board</h1>
     <div style="width: 100px;"></div>
 </div>
 

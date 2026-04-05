@@ -722,12 +722,12 @@
             <h1>🎵 Focus Music</h1>
             <p class="subtitle">Choose your ambient sound</p>
             <div class="music-categories">
-<button class="music-btn" onclick="playMusicInline('rain')">🌧️ Rain</button>
-                <button class="music-btn" onclick="playMusicInline('forest')">🌲 Forest</button>
-                <button class="music-btn" onclick="playMusicInline('ocean')">🌊 Ocean</button>
-                <button class="music-btn" onclick="playMusicInline('cafe')">☕ Café</button>
-                <button class="music-btn" onclick="playMusicInline('fire')">🔥 Fireplace</button>
-                <button class="music-btn" onclick="stopMusicInline()">⏹️ Stop</button>
+                <button class="music-btn" data-music="rain" onclick="playMusic('rain')">🌧️ Rain</button>
+                <button class="music-btn" data-music="forest" onclick="playMusic('forest')">🌲 Forest</button>
+                <button class="music-btn" data-music="ocean" onclick="playMusic('ocean')">🌊 Ocean</button>
+                <button class="music-btn" data-music="cafe" onclick="playMusic('cafe')">☕ Café</button>
+                <button class="music-btn" data-music="fire" onclick="playMusic('fire')">🔥 Fireplace</button>
+                <button class="music-btn" onclick="stopMusic()">⏹️ Stop</button>
             </div>
         </div>
     </div>
@@ -967,41 +967,7 @@
         }
 
         // Music
-        var currentAudio = null;
-        var currentMusicType = null;
-        
-// Simple music functions - direct static paths
-function playMusicInline(type) {
-  const musicFiles = {
-    'rain': '/static/music/rain.mp3',
-    'forest': '/static/music/forest.mp3',
-    'ocean': '/static/music/ocean.mp3',
-    'cafe': '/static/music/cafe.mp3',
-    'fire': '/static/music/fireplace.mp3'
-  };
-  
-  const src = musicFiles[type];
-  if (!src) return;
-
-  if (currentAudio) currentAudio.pause();
-  
-  currentAudio = new Audio(src);
-  currentAudio.loop = true;
-  currentAudio.volume = 0.5;
-  currentMusicType = type;
-  event.target.classList.add('active');
-  
-  currentAudio.play().catch(e => console.log('Play error:', e));
-}
-
-function stopMusicInline() {
-  if (currentAudio) {
-    currentAudio.pause();
-    currentAudio = null;
-    currentMusicType = null;
-  }
-  document.querySelectorAll('.music-btn').forEach(btn => btn.classList.remove('active'));
-}
+        // The shared music manager in base.html persists playback across tabs and page navigation.
 
         // Game Attempts System
         var gameLimits = {'game1': 5, 'game2': 1, 'game3': 1};
@@ -1191,166 +1157,8 @@ function showAlarmPopup(title, msg) {
 
         function closeAlarmPopup() { document.getElementById('alarmPopup').classList.remove('show'); }
         function closePopup() { closeAlarmPopup(); }
-
-        // Motivational Alerts
-
-/* ================= GLOBAL VARIABLES ================= */
-let motivationTimer = null;
-let motivationInterval = 5;
-let lastMessageIndex = -1;
-let isMotivationActive = false;
-
-/* ================= MESSAGES ================= */
-const motivationMessages = [
-    "🔥 Stay focused! Success is built one step at a time.",
-    "💡 Small progress daily leads to big results.",
-    "🚀 Your future self will thank you for this effort.",
-    "📚 Discipline today, freedom tomorrow.",
-    "🎯 Focus beats motivation. Keep going!",
-    "🏆 Consistency is the real superpower.",
-    "💪 You're stronger than you think!",
-    "🌟 Every study session counts!",
-    "📖 Knowledge is power!",
-    "⏰ Time is precious - use it wisely!",
-    "📝 Keep pushing, you're doing great!",
-    "💯 One more page, one more problem!",
-    "🎓 Your dreams are waiting - keep studying!",
-    "⭐ Believe in yourself and your abilities!",
-    "🔥 You're on fire! Keep the momentum!"
-];
-
-/* ================= TOGGLE ================= */
-function toggleMotivation() {
-    document.getElementById('motivationToggle').classList.toggle('active');
-}
-
-/* ================= START ================= */
-function startMotivation() {
-    motivationInterval = parseInt(document.getElementById('motivationInterval').value);
-
-    let endTime = Date.now() + motivationInterval * 60 * 1000;
-
-    isMotivationActive = true;
-
-    localStorage.setItem('motivationState', JSON.stringify({
-        isActive: true,
-        endTime: endTime,
-        interval: motivationInterval,
-        lastIndex: lastMessageIndex
-    }));
-
-    runMotivationTimer(); // start immediately
-}
-
-/* ================= TIMER (REAL-TIME BASED) ================= */
-function runMotivationTimer() {
-    if (motivationTimer) clearInterval(motivationTimer);
-
-    motivationTimer = setInterval(() => {
-
-        const saved = JSON.parse(localStorage.getItem('motivationState'));
-        if (!saved || !saved.isActive) return;
-
-        let now = Date.now();
-        let timeLeft = Math.floor((saved.endTime - now) / 1000);
-
-        if (timeLeft <= 0) {
-            showMotivationMessage();
-
-            // Reset next cycle
-            let newEndTime = Date.now() + saved.interval * 60 * 1000;
-
-            saved.endTime = newEndTime;
-            saved.lastIndex = lastMessageIndex;
-
-            localStorage.setItem('motivationState', JSON.stringify(saved));
-
-            timeLeft = saved.interval * 60;
-        }
-
-        let mins = Math.floor(timeLeft / 60);
-        let secs = timeLeft % 60;
-
-        let el = document.getElementById('motivationTimer');
-        if (el) {
-            el.textContent =
-                String(mins).padStart(2, '0') + ':' +
-                String(secs).padStart(2, '0');
-        }
-
-    }, 1000);
-}
-
-/* ================= RESTORE (ALL PAGES) ================= */
-window.addEventListener("load", () => {
-    const saved = JSON.parse(localStorage.getItem('motivationState'));
-
-    if (saved && saved.isActive) {
-        isMotivationActive = true;
-        motivationInterval = saved.interval;
-        lastMessageIndex = saved.lastIndex || -1;
-
-        runMotivationTimer(); // 🔥 restart globally
-    }
-});
-
-/* ================= STOP ================= */
-function stopMotivation() {
-    if (motivationTimer) {
-        clearInterval(motivationTimer);
-        motivationTimer = null;
-    }
-
-    isMotivationActive = false;
-    localStorage.removeItem('motivationState');
-
-    let el = document.getElementById('motivationTimer');
-    if (el) el.textContent = '--:--';
-}
-
-/* ================= SHOW MESSAGE ================= */
-function showMotivationMessage() {
-    let randomIndex;
-
-    do {
-        randomIndex = Math.floor(Math.random() * motivationMessages.length);
-    } while (randomIndex === lastMessageIndex && motivationMessages.length > 1);
-
-    lastMessageIndex = randomIndex;
-
-    // 🔊 Sound
-    let sound = new Audio("/static/sounds/notification.mp3");
-    sound.play().catch(() => {});
-
-    // 🔔 UI (if exists)
-    let notification = document.getElementById('motivationNotification');
-    if (notification) {
-        document.getElementById('motivationMessage').textContent =
-            motivationMessages[randomIndex];
-
-        notification.classList.add('show');
-        setTimeout(() => notification.classList.remove('show'), 5000);
-    }
-
-    // 🌍 GLOBAL trigger
-    localStorage.setItem('focusNotifications', JSON.stringify({
-        type: 'motivation',
-        message: motivationMessages[randomIndex]
-    }));
-}
-
-/* ================= GLOBAL LISTENER (ALL PAGES) ================= */
-window.addEventListener("storage", function(event) {
-    if (event.key === "focusNotifications") {
-        const data = JSON.parse(event.newValue);
-
-        if (data.type === "motivation") {
-            alert("💪 " + data.message);
-        }
-    }
-});
-
     </script>
+    {% include 'includes/music_control_bar.html' %}
 </body>
 </html>
 

@@ -54,6 +54,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "django.template.context_processors.csrf",
             ],
         },
     },
@@ -72,7 +73,11 @@ DATABASES = {
         "PORT": os.getenv("DB_PORT", "5432"),
         "OPTIONS": {
             "sslmode": "require",  # IMPORTANT for Neon
+            "connect_timeout": 10,
+            "keepalives": 1,
+            "keepalives_idle": 30,
         },
+        "CONN_MAX_AGE": 0,  # Disable connection pooling for reliability
     }
 }
 
@@ -102,6 +107,11 @@ MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# File Upload Settings
+DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600  # 100MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 104857600  # 100MB
+FILE_UPLOAD_PERMISSIONS = 0o644
 
 # AI Keys
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")

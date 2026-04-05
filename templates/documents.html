@@ -281,7 +281,8 @@
                     <p class="document-date">Uploaded: {{ syllabus.uploaded_at|date:"M d, Y" }}</p>
                 </div>
                 <div class="document-actions">
-                    <a href="{{ syllabus.file_url }}" target="_blank" class="btn-view" title="Google Drive">🌐 View{{ syllabus.google_drive_url|yesno:' (Drive), (Local)' }}</a>
+                    <a href="{% url 'syllabus_detail' syllabus.id %}" class="btn-view">👁️ View</a>
+                    <a href="{{ syllabus.pdf_file.url }}" target="_blank" class="btn-view">📄 PDF</a>
                 </div>
             </div>
             {% endfor %}
@@ -310,7 +311,7 @@
                     <p class="document-date">Uploaded: {{ doc.uploaded_at|date:"M d, Y" }}</p>
                 </div>
                 <div class="document-actions">
-                    <a href="{{ doc.file_url }}" target="_blank" class="btn-view" title="Google Drive">🌐 View{{ doc.google_drive_url|yesno:' (Drive), (Local)' }}</a>
+                    <a href="{{ doc.file.url }}" target="_blank" class="btn-view">👁️ View</a>
                     <a href="{% url 'delete_document' doc.id %}" class="btn-delete" onclick="return confirm('Are you sure you want to delete this document?')">Delete</a>
                 </div>
             </div>
@@ -327,13 +328,3 @@
 </div>
 {% endblock %}
 
-<script>
-window.addEventListener("storage", function(event) {
-    if (event.key === "focusNotifications") {
-        const data = JSON.parse(event.newValue);
-        if (data.type === "motivation") {
-            alert("💪 " + data.message);
-        }
-    }
-});
-</script>

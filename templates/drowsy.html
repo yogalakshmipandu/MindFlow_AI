@@ -527,15 +527,6 @@ function updateSleepScore(ear, mar) {
     document.getElementById('sessionTime').textContent = score + "%";
 }
 </script>
+    {% include 'includes/music_control_bar.html' %}
 </body>
 </html>
-<script>
-window.addEventListener("storage", function(event) {
-    if (event.key === "focusNotifications") {
-        const data = JSON.parse(event.newValue);
-        if (data.type === "motivation") {
-            alert("💪 " + data.message);
-        }
-    }
-});
-</script>

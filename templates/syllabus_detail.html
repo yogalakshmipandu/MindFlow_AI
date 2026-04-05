@@ -15,10 +15,7 @@
     <!-- Syllabus Header -->
 <div class="syllabus-header">
         <h1>{{ syllabus.title }}</h1>
-        <p class="syllabus-meta">Uploaded: {{ syllabus.uploaded_at|date:"F d, Y" }} | <a href="{{ syllabus.file_url }}" target="_blank">📎 Syllabus File</a> {% if syllabus.google_drive_url %} (Drive){% endif %}</p>
-        {% if syllabus.google_drive_url %}
-        <a href="{% url 'export_syllabus_excel' syllabus.id %}" class="btn btn-excel">📊 Export Excel to Drive</a>
-        {% endif %}
+        <p class="syllabus-meta">Uploaded: {{ syllabus.uploaded_at|date:"F d, Y" }} | <a href="{{ syllabus.pdf_file.url }}" target="_blank">📎 Syllabus File</a></p>
     </div>
     
     <!-- Units Section -->
@@ -64,17 +61,17 @@
 <style>
     .home-btn {
         display: inline-block;
-        background: #22c55e;
-        color: white;
+        background: #000;
+        color: #fff;
         padding: 10px 20px;
-        border-radius: 8px;
+        border-radius: 6px;
         text-decoration: none;
         font-weight: 500;
         margin-bottom: 20px;
     }
     
     .home-btn:hover {
-        background: #16a34a;
+        background: #333;
     }
     
     .breadcrumb {
@@ -83,7 +80,7 @@
     }
     
     .breadcrumb a {
-        color: #4a90e2;
+        color: #333;
         text-decoration: none;
     }
     
@@ -180,13 +177,3 @@
 </style>
 {% endblock %}
 
-<script>
-window.addEventListener("storage", function(event) {
-    if (event.key === "focusNotifications") {
-        const data = JSON.parse(event.newValue);
-        if (data.type === "motivation") {
-            alert("💪 " + data.message);
-        }
-    }
-});
-</script>

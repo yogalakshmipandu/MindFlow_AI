@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
 from django.template.loader import render_to_string
+from django.db import transaction
 import fitz
 import re
 import json
@@ -109,6 +110,7 @@ Text:
 
         
 @login_required
+@transaction.atomic
 def upload_syllabus(request):
     """Handle syllabus PDF upload and extraction."""
     if request.method == "POST":
@@ -124,35 +126,62 @@ def upload_syllabus(request):
             return redirect("dashboard")
         
         try:
-            # Extract text from PDF
-            text = extract_text_from_pdf(pdf_file)
-            
-            if not text.strip():
-                messages.error(request, "Could not extract text from PDF.")
+            # File size check
+            if pdf_file.size > 50 * 1024 * 1024:  # 50MB limit
+                messages.error(request, "PDF file is too large. Maximum 50MB allowed.")
                 return redirect("dashboard")
             
-            # Extract units
-            units_dict = extract_units(text)
+            print(f"[UPLOAD] ===== START UPLOAD =====")
+            print(f"[UPLOAD] User: {request.user.username}, File: {pdf_file.name}, Size: {pdf_file.size} bytes")
             
-            # Save syllabus to database
+            # STEP 1: Create syllabus record immediately
+            print(f"[UPLOAD] Step 1: Creating syllabus record in database...")
             syllabus = Syllabus.objects.create(
                 user=request.user,
                 title=title,
                 pdf_file=pdf_file
             )
+            print(f"[UPLOAD] Step 1 SUCCESS: Syllabus ID {syllabus.id} created in DB")
             
-            # Save units to database
-            for unit_name, unit_content in units_dict.items():
+            # STEP 2: Extract text from PDF
+            print(f"[UPLOAD] Step 2: Extracting text from PDF...")
+            text = extract_text_from_pdf(pdf_file)
+            print(f"[UPLOAD] Step 2 SUCCESS: Extracted {len(text)} characters")
+            
+            if not text.strip():
+                print(f"[UPLOAD] WARNING: No text extracted from PDF, skipping unit creation")
+                messages.success(request, f"Syllabus uploaded successfully (no text content found).")
+                return redirect("syllabus_detail", syllabus_id=syllabus.id)
+            
+            # STEP 3: Extract units
+            print(f"[UPLOAD] Step 3: Extracting units...")
+            units_dict = extract_units(text)
+            print(f"[UPLOAD] Step 3 SUCCESS: Found {len(units_dict)} units")
+            
+            # STEP 4: Save units
+            print(f"[UPLOAD] Step 4: Saving {len(units_dict)} units to database...")
+            for idx, (unit_name, unit_content) in enumerate(units_dict.items(), 1):
                 unit = Unit.objects.create(
                     syllabus=syllabus,
                     name=unit_name,
-                    content=unit_content[:5000]  # Limit content length
+                    content=unit_content[:5000]
                 )
+                print(f"[UPLOAD]   - Unit {idx}/{len(units_dict)}: {unit_name} (ID {unit.id})")
             
-            messages.success(request, f"Syllabus uploaded successfully! Found {len(units_dict)} units.")
+            print(f"[UPLOAD] Step 4 SUCCESS: All units saved")
+            print(f"[UPLOAD] ===== UPLOAD COMPLETE =====")
+            
+            messages.success(request, f"Syllabus '{title}' uploaded successfully! Found {len(units_dict)} units.")
             return redirect("syllabus_detail", syllabus_id=syllabus.id)
             
         except Exception as e:
+            print(f"[UPLOAD] ===== ERROR OCCURRED =====")
+            print(f"[UPLOAD] Exception Type: {type(e).__name__}")
+            print(f"[UPLOAD] Exception Message: {str(e)}")
+            import traceback
+            print(f"[UPLOAD] Traceback:")
+            traceback.print_exc()
+            print(f"[UPLOAD] ===== END ERROR =====")
             messages.error(request, f"Error processing syllabus: {str(e)}")
             return redirect("dashboard")
     

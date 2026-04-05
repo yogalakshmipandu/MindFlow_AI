@@ -1,0 +1,36 @@
+{% load static %}
+<style>
+.music-control-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0,0,0,0.9);
+    color: white;
+    padding: 10px 20px;
+    display: none;
+    align-items: center;
+    gap: 15px;
+    z-index: 10000;
+    font-family: 'Poppins', sans-serif;
+}
+.music-control-bar.show {
+    display: flex;
+}
+.music-control-bar button {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 12px;
+}
+</style>
+<div class="music-control-bar" id="musicControlBar">
+    <span id="musicCurrentType">🎵 Ambient</span>
+    <button type="button" onclick="window.musicManager && window.musicManager.togglePause()">⏸️</button>
+    <button type="button" onclick="window.musicManager && window.musicManager.stop()">⏹️</button>
+</div>
+<script src="{% static 'js/music-manager.js' %}"></script>
+<script src="{% static 'js/focus-alarm.js' %}"></script>

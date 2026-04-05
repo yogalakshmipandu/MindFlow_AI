@@ -8,60 +8,66 @@ class MusicManager {
     this.volume = 0.5;
     this.isPlaying = false;
     this.storageKey = 'focusMusicState';
+    this.musicFiles = {
+      rain: '/static/music/rain.mp3',
+      forest: '/static/music/forest.mp3',
+      ocean: '/static/music/ocean.mp3',
+      cafe: '/static/music/cafe.mp3',
+      fire: '/static/music/fireplace.mp3'
+    };
     this.init();
   }
 
   init() {
-    // Load state from storage
     const saved = localStorage.getItem(this.storageKey);
     if (saved) {
       const state = JSON.parse(saved);
       this.currentType = state.type;
       this.volume = state.volume || 0.5;
-      
+
       if (state.src) {
         this.audio = new Audio(state.src);
         this.audio.loop = true;
         this.audio.volume = this.volume;
         this.audio.currentTime = state.position || 0;
-        
+
         if (state.isPlaying) {
-          this.audio.play().catch(e => console.log('Resume failed:', e));
+          this.audio.play().catch((e) => console.log('Resume failed:', e));
+          this.isPlaying = true;
         }
       }
     }
 
-    // Handle page visibility
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) {
-        this.saveState();
-        this.audio?.pause();
-      } else {
-        this.audio?.play().catch(e => console.log('Resume on visible:', e));
+    window.addEventListener('storage', (event) => {
+      if (event.key === this.storageKey) {
+        this.syncFromStorage(event.newValue);
       }
     });
 
-    // Save state on unload
     window.addEventListener('beforeunload', () => this.saveState());
     window.addEventListener('pagehide', () => this.saveState());
+    this.updateControlBar();
   }
 
-  play(type) {
-const musicFiles = {
-      'rain': '/static/music/rain.mp3',
-      'forest': '/static/music/forest.mp3',
-      'ocean': '/static/music/ocean.mp3',
-      'cafe': '/static/music/cafe.mp3',
-      'fire': '/static/music/fireplace.mp3'
-    };
+  syncFromStorage(value) {
+    if (!value) {
+      this.stop(false);
+      return;
+    }
+    const state = JSON.parse(value);
+    if (state.isPlaying && (!this.isPlaying || this.currentType !== state.type)) {
+      this.play(state.type, false);
+    } else if (!state.isPlaying) {
+      this.stop(false);
+    }
+  }
 
-    const src = musicFiles[type];
+  play(type, save = true) {
+    const src = this.musicFiles[type];
     if (!src) return;
 
-    // Stop current
-    this.stop();
+    this.stop(false);
 
-    // Create new audio
     this.audio = new Audio(src);
     this.audio.loop = true;
     this.audio.volume = this.volume;
@@ -69,22 +75,25 @@ const musicFiles = {
     this.isPlaying = true;
 
     this.audio.play().then(() => {
-      this.saveState();
+      this.updateControlBar();
+      if (save) this.saveState();
       document.dispatchEvent(new CustomEvent('focusMusicPlaying', { detail: { type } }));
-    }).catch(e => {
+    }).catch((e) => {
       console.log('Play failed:', e);
       this.isPlaying = false;
+      this.updateControlBar();
     });
   }
 
-  stop() {
+  stop(removeStorage = true) {
     if (this.audio) {
       this.audio.pause();
       this.audio = null;
     }
     this.isPlaying = false;
     this.currentType = null;
-    localStorage.removeItem(this.storageKey);
+    if (removeStorage) localStorage.removeItem(this.storageKey);
+    this.updateControlBar();
     document.dispatchEvent(new CustomEvent('focusMusicStopped'));
   }
 
@@ -95,10 +104,11 @@ const musicFiles = {
       this.audio.pause();
       this.isPlaying = false;
     } else {
-      this.audio.play().catch(e => console.log('Resume failed:', e));
+      this.audio.play().catch((e) => console.log('Resume failed:', e));
       this.isPlaying = true;
     }
     this.saveState();
+    this.updateControlBar();
   }
 
   saveState() {
@@ -113,19 +123,47 @@ const musicFiles = {
     };
     localStorage.setItem(this.storageKey, JSON.stringify(state));
   }
+
+  updateControlBar() {
+    const bar = document.getElementById('musicControlBar');
+    const label = document.getElementById('musicCurrentType');
+    if (!bar || !label) return;
+
+    if (this.isPlaying && this.currentType) {
+      label.textContent = `🎵 ${this.currentType.charAt(0).toUpperCase() + this.currentType.slice(1)}`;
+      bar.classList.add('show');
+    } else {
+      bar.classList.remove('show');
+    }
+  }
 }
 
-// Global instance
 window.musicManager = new MusicManager();
 
-// Focus page controls (override local functions)
 function playMusic(type) {
   window.musicManager.play(type);
-  if (event?.target) event.target.classList.add('active');
+  document.querySelectorAll('.music-btn').forEach((btn) => {
+    btn.classList.toggle('active', btn.getAttribute('data-music') === type);
+  });
 }
 
 function stopMusic() {
   window.musicManager.stop();
-  document.querySelectorAll('.music-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.music-btn').forEach((btn) => btn.classList.remove('active'));
+}
+
+function syncMusicButtons() {
+  const saved = localStorage.getItem(window.musicManager.storageKey);
+  if (!saved) return;
+  const state = JSON.parse(saved);
+  document.querySelectorAll('.music-btn').forEach((btn) => {
+    btn.classList.toggle('active', btn.getAttribute('data-music') === state.type);
+  });
+}
+
+if (document.readyState === 'loading') {
+  window.addEventListener('DOMContentLoaded', syncMusicButtons);
+} else {
+  syncMusicButtons();
 }
 
