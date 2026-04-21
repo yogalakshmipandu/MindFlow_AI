@@ -77,7 +77,7 @@ DATABASES = {
             "keepalives": 1,
             "keepalives_idle": 30,
         },
-        "CONN_MAX_AGE": 0,  # Disable connection pooling for reliability
+        "CONN_MAX_AGE": 60,  # Disable connection pooling for reliability
     }
 }
 

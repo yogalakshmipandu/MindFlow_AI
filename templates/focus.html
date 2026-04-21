@@ -1416,7 +1416,7 @@ function triggerAlert() {
         // The shared music manager in base.html persists playback across tabs and page navigation.
 
         // Game Attempts System
-        var gameLimits = {'game1': 5, 'game2': 1, 'game3': 1};
+        var gameLimits = {'game1': 8, 'game2': 4, 'game3': 4};
         
         function getGameAttempts(key) {
             return JSON.parse(localStorage.getItem('gameAttempts') || '{}')[key] || 0;

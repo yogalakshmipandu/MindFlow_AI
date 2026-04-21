@@ -9,6 +9,7 @@ import fitz
 import re
 import json
 import os
+import requests
 from groq import Groq
 from dotenv import load_dotenv
 from .models import Syllabus, Unit, Topic, TopicLink, TopicDocument
@@ -16,6 +17,9 @@ from io import BytesIO
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from openpyxl import Workbook
+from openpyxl.styles import PatternFill, Alignment, Font
+from openpyxl.drawing.image import Image as ExcelImage
 
 load_dotenv()
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
@@ -35,7 +39,7 @@ def extract_text_from_pdf(file):
 
 def extract_units(text):
     """Extract units from syllabus text using regex."""
-    unit_pattern = r"(UNIT\s+[IVX\d]+\s*[:\-]?\s*[A-Za-z\s]*)"
+    unit_pattern = r"(UNIT\s+[IVX\d]+\s*[:\-]?\s*[A-Za-z\s]*)" 
     parts = re.split(unit_pattern, text, flags=re.IGNORECASE)
     units = {}
     for i in range(1, len(parts), 2):
@@ -193,6 +197,130 @@ def syllabus_detail(request, syllabus_id):
     syllabus = get_object_or_404(Syllabus, id=syllabus_id, user=request.user)
     units = syllabus.units.all()
     return render(request, "syllabus_detail.html", {"syllabus": syllabus, "units": units})
+
+def _safe_excel_text(value):
+    return str(value).replace('"', '""') if value is not None else ""
+
+def _build_hyperlink_formula(entries, default_prefix, icon):
+    if not entries:
+        return None
+    formulas = []
+    for idx, entry in enumerate(entries, start=1):
+        url = entry.get("url") if isinstance(entry, dict) else getattr(entry, "url", "")
+        title = entry.get("title", "") if isinstance(entry, dict) else getattr(entry, "title", "")
+        if not title:
+            title = f"{icon} {default_prefix} {idx}"
+        escaped_url = _safe_excel_text(url)
+        escaped_title = _safe_excel_text(title)
+        formulas.append(f'HYPERLINK("{escaped_url}", "{escaped_title}")')
+    if len(formulas) == 1:
+        return f"={formulas[0]}"
+    return "=" + " & CHAR(10) & ".join(formulas)
+
+def _unit_color(unit_name):
+    pastel_colors = [
+        "F9E2EE", "E3F6FF", "FFF3BF", "E2F0CB",
+        "FDE2F3", "D8E2FF", "FFF1E6", "DCE2D0"
+    ]
+    index = sum(ord(ch) for ch in str(unit_name)) % len(pastel_colors)
+    return pastel_colors[index]
+
+def _normalize_filename(value):
+    return re.sub(r"[^A-Za-z0-9_-]+", "_", value).strip("_") or "syllabus_export"
+
+@login_required
+def export_syllabus(request, syllabus_id):
+    """Export a syllabus as a styled MindFlow-style Excel workbook."""
+    syllabus = get_object_or_404(Syllabus, id=syllabus_id, user=request.user)
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = "MindFlow Export"
+
+    headers = ["Syllabus", "Unit", "Topic", "Websites", "YouTube", "Drive", "Text", "Images"]
+    sheet.append(headers)
+
+    header_fill = PatternFill(start_color="B4C6E7", end_color="B4C6E7", fill_type="solid")
+    header_font = Font(bold=True)
+    header_alignment = Alignment(wrap_text=True, vertical="top")
+
+    for col, header in enumerate(headers, start=1):
+        cell = sheet.cell(row=1, column=col)
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = header_alignment
+
+    row_index = 2
+    for unit in syllabus.units.all().order_by("id"):
+        topics = unit.topics.all().order_by("id")
+        for topic in topics:
+            links = list(topic.links.all())
+            website_links = [link for link in links if link.link_type == "website"]
+            youtube_links = [link for link in links if link.link_type == "youtube"]
+            text_links = [link for link in links if link.link_type == "doc"]
+            image_links = [link for link in links if link.link_type == "image"]
+            drive_docs = list(topic.documents.all())
+
+            website_formula = _build_hyperlink_formula(website_links, "Resource", "🔗")
+            youtube_formula = _build_hyperlink_formula(youtube_links, "Video", "▶")
+            text_formula = _build_hyperlink_formula(text_links, "Doc", "📄")
+
+            drive_entries = []
+            for idx, doc in enumerate(drive_docs, start=1):
+                doc_url = request.build_absolute_uri(doc.file.url)
+                drive_entries.append({"url": doc_url, "title": doc.title or f"📁 File {idx}"})
+            drive_formula = _build_hyperlink_formula(drive_entries, "File", "📁")
+
+            image_formula = _build_hyperlink_formula(image_links, "Img", "🖼️")
+            row = [
+                syllabus.title,
+                unit.name,
+                topic.name,
+                website_formula or "",
+                youtube_formula or "",
+                drive_formula or "",
+                text_formula or "",
+                image_formula or ""
+            ]
+            sheet.append(row)
+
+            fill_color = _unit_color(unit.name)
+            fill = PatternFill(start_color=fill_color, end_color=fill_color, fill_type="solid")
+            for col in range(1, len(headers) + 1):
+                cell = sheet.cell(row=row_index, column=col)
+                cell.fill = fill
+                cell.alignment = Alignment(wrap_text=True, vertical="top")
+                if col == 3:
+                    cell.font = Font(bold=True)
+
+            row_index += 1
+
+    sheet.freeze_panes = sheet["A2"]
+    sheet.sheet_view.showGridLines = True
+
+    widths = {
+        "A": 22,
+        "B": 24,
+        "C": 34,
+        "D": 32,
+        "E": 32,
+        "F": 28,
+        "G": 28,
+        "H": 24,
+    }
+    for col_letter, width in widths.items():
+        sheet.column_dimensions[col_letter].width = width
+
+    output = BytesIO()
+    workbook.save(output)
+    output.seek(0)
+
+    filename = f"{_normalize_filename(syllabus.title)}_mindflow_export.xlsx"
+    response = HttpResponse(
+        output.getvalue(),
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = f"attachment; filename=\"{filename}\""
+    return response
 
 @login_required
 def delete_syllabus(request, syllabus_id):

@@ -25,3 +25,24 @@ Status: In Progress
 
 **Next Action**: User approval to start Step 2 edits.
 
+
+# Chatbot Maximize/Minimize Buttons ✅
+
+## Completed Steps:
+### 1. ✅ Create TODO.md
+### 2. ✅ Edit templates/dashboard.html
+   - Added min/max buttons (− □) to `.chatbot-header`
+   - Added CSS: `.minimized` hides messages/input; `.maximized` expands to 90vw/70vh centered
+   - Added JS: `minimizeChatbot()`, `maximizeChatbot()`, updated `toggleChatbot()` to restore from min
+### 3. ✅ Test functionality
+   - Fixed JS syntax errors from linter
+   - Verified: Min collapses to header, Max expands nearly fullscreen, Toggle/Close work seamlessly
+
+## Files Modified:
+- `templates/dashboard.html`
+
+**Updated**: Minimize now keeps previous window size (380px width), collapses height to header (70px). Toggle/close restores exactly.
+
+Test: `python manage.py runserver`, dashboard → 💬 → test − □ ×.
+
+**Status**: Task completed successfully! 🎉

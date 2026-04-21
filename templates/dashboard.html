@@ -267,7 +267,8 @@
             flex-wrap: wrap;
         }
 
-        .btn-view {
+        .btn-view,
+        .btn-export {
             padding: 10px 18px;
             background: #000;
             color: white;
@@ -276,6 +277,28 @@
             font-size: 13px;
             font-weight: 500;
             transition: background 0.3s;
+        }
+
+        .btn-view:hover,
+        .btn-export:hover {
+            background: #333;
+        }
+
+        .btn-export {
+            background: #111;
+        }
+
+        .btn-delete {
+            padding: 10px 18px;
+            background: #fff;
+            color: #333;
+            border: 2px solid #ccc;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.3s;
+            cursor: pointer;
         }
 
         .btn-view:hover {
@@ -439,6 +462,72 @@
             background: #333;
         }
 
+        /* Maximize styles */
+        .chatbot-window.maximized {
+            width: 90vw !important;
+            max-width: 800px !important;
+            height: 70vh !important;
+            bottom: auto !important;
+            top: 15vh !important;
+            left: 5% !important;
+            right: 5% !important;
+        }
+        .chatbot-window.maximized .chatbot-messages {
+            height: calc(70vh - 140px) !important;
+        }
+        .chatbot-size-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            line-height: 1;
+            transition: background 0.3s;
+        }
+        .chatbot-size-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .chatbot-max-btn {
+            display: block;
+        }
+        .chatbot-min-btn {
+            display: none;
+        }
+        .chatbot-window.maximized .chatbot-max-btn {
+            display: none;
+        }
+        .chatbot-window.maximized .chatbot-min-btn {
+            display: block;
+        }
+        .chatbot-window.maximized {
+            width: 90vw !important;
+            max-width: 800px;
+            height: 70vh !important;
+            bottom: auto !important;
+            top: 15% !important;
+            right: 5% !important;
+            left: 5% !important;
+        }
+        .chatbot-window.maximized .chatbot-messages {
+            height: 55vh !important;
+        }
+        .chatbot-min, .chatbot-max {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            line-height: 1;
+            transition: background 0.3s;
+        }
+        .chatbot-min:hover, .chatbot-max:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
         /* Delete Confirmation Modal */
         .modal {
             display: none;
@@ -602,6 +691,7 @@
                     </div>
                     <div class="syllabus-actions">
                         <a href="{% url 'syllabus_detail' syllabus.id %}" class="btn-view">View Units</a>
+                        <a href="{% url 'export_syllabus' syllabus.id %}" class="btn-export">Download</a>
                         <button class="btn-delete" onclick="showDeleteModal({{ syllabus.id }}, '{{ syllabus.title|escapejs }}')">Delete</button>
                     </div>
                 </div>
@@ -632,7 +722,10 @@
         <div class="chatbot-header">
             <span>💬</span>
             <h4>Hey {{ user.username }}! I am your Bestie!</h4>
-            <button class="chatbot-close" onclick="toggleChatbot()">&times;</button>
+                        <span style="margin-left: auto;"></span>
+            <button class="chatbot-max-btn" onclick="toggleMaximize()" title="Maximize">□</button>
+            <button class="chatbot-min-btn" onclick="toggleMaximize()" title="Minimize" style="display: none;">−</button>
+            <button class="chatbot-close" onclick="toggleChatbot()">×</button>
         </div>
         <div class="chatbot-messages" id="chatbotMessages">
             <div class="chatbot-message bot">
@@ -679,11 +772,44 @@
                 form.submit();
             }
         }
+ // Chatbot state
+        let isMaximized = false;
+        let normalState = {
+            width: '380px',
+            bottom: '100px',
+            right: '30px'
+        };
 
         // Chatbot Functions
+        function toggleMaximize() {
+            const win = document.getElementById('chatbotWindow');
+            if (isMaximized) {
+                // Minimize: restore normal "Bestie" window
+                win.classList.remove('maximized');
+                win.style.width = normalState.width;
+                win.style.bottom = normalState.bottom;
+                win.style.right = normalState.right;
+                win.style.top = '';
+                win.style.left = '';
+                win.style.height = '';
+                isMaximized = false;
+            } else {
+                // Maximize: save current, go big
+                win.dataset.normalWidth = win.style.width || normalState.width;
+                win.dataset.normalBottom = win.style.bottom || normalState.bottom;
+                win.dataset.normalRight = win.style.right || normalState.right;
+                win.classList.add('maximized');
+                isMaximized = true;
+            }
+        }
+
         function toggleChatbot() {
             const window = document.getElementById('chatbotWindow');
-            window.classList.toggle('active');
+            if (window.classList.contains('maximized')) {
+                toggleMaximize(); // Minimize first
+            } else {
+                window.classList.toggle('active');
+            }
         }
         
         function handleChatbotKeyPress(event) {

@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 
 {% block title %}{{ unit.name }} - MindFlow{% endblock %}
@@ -6,20 +7,20 @@
 <div class="container">
     <!-- Home Button -->
     <a href="{% url 'dashboard' %}" class="home-btn">🏠 Home</a>
-    
+
     <!-- Breadcrumb -->
     <div class="breadcrumb">
-        <a href="{% url 'dashboard' %}">Dashboard</a> > 
-        <a href="{% url 'syllabus_detail' unit.syllabus.id %}">{{ unit.syllabus.title }}</a> > 
+        <a href="{% url 'dashboard' %}">Dashboard</a> >
+        <a href="{% url 'syllabus_detail' unit.syllabus.id %}">{{ unit.syllabus.title }}</a> >
         <span>{{ unit.name }}</span>
     </div>
-    
+
     <!-- Unit Header -->
     <div class="unit-header">
         <h1>{{ unit.name }}</h1>
         <p class="unit-description">{{ unit.content|truncatewords:50 }}</p>
     </div>
-    
+
     <!-- Topics Section -->
     <div class="topics-section">
         <div class="section-header">
@@ -36,7 +37,7 @@
                 {% endif %}
             </div>
         </div>
-        
+
         <!-- Add Topic Form -->
         <div id="addTopicForm" class="add-topic-form" style="display: none;">
             <form method="post" action="{% url 'add_topic' unit.id %}">
@@ -46,7 +47,7 @@
                 <button type="button" class="btn btn-secondary" onclick="hideAddTopicForm()">Cancel</button>
             </form>
         </div>
-        
+
         {% if topics %}
             <div class="topics-grid">
                 {% for topic in topics %}
@@ -57,7 +58,7 @@
                         <span class="topic-links-count">{{ topic.links.count }} links</span>
                     </a>
                     <div class="topic-actions-btns">
-                        <button class="btn-icon" onclick="showEditTopicForm({{ topic.id }})" title="Edit">✏️</button>
+                        <button class="btn-icon" onclick="showEditTopicForm('{{ topic.id }}', '{{ topic.name|escapejs }}')" title="Edit">✏️</button>
                         <a href="{% url 'delete_topic' topic.id %}" class="btn-icon" title="Delete" onclick="return confirm('Are you sure?')">🗑️</a>
                     </div>
                 </div>
@@ -83,47 +84,47 @@
         font-weight: 500;
         margin-bottom: 20px;
     }
-    
+
     .home-btn:hover {
         background: #333;
     }
-    
+
     .breadcrumb {
         margin-bottom: 20px;
         color: #666;
     }
-    
+
     .breadcrumb a {
         color: #333;
         text-decoration: none;
     }
-    
+
     .unit-header {
         margin-bottom: 40px;
     }
-    
+
     .unit-header h1 {
         color: #333;
         font-size: 32px;
     }
-    
+
     .unit-description {
         color: #666;
         margin-top: 10px;
         line-height: 1.6;
     }
-    
+
     .section-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 25px;
     }
-    
+
     .section-header h2 {
         color: #333;
     }
-    
+
     .btn-extract {
         background: #000;
         color: #fff;
@@ -133,45 +134,47 @@
         cursor: pointer;
         font-weight: 500;
     }
-    
+
     .topics-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 15px;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
     }
-    
+
     .topic-card {
         display: flex;
         align-items: center;
-        gap: 12px;
+        justify-content: space-between;
+        gap: 16px;
         background: white;
-        padding: 20px;
+        padding: 20px 24px;
         border-radius: 12px;
         box-shadow: 0 2px 10px rgba(0,0,0,0.08);
         text-decoration: none;
         transition: transform 0.2s, box-shadow 0.2s;
+        min-height: 70px;
     }
-    
+
     .topic-card:hover {
         transform: translateY(-3px);
         box-shadow: 0 4px 20px rgba(0,0,0,0.12);
     }
-    
+
     .topic-icon {
         font-size: 24px;
     }
-    
+
     .topic-name {
         flex: 1;
         color: #333;
         font-weight: 500;
     }
-    
+
     .topic-links-count {
         color: #888;
         font-size: 12px;
     }
-    
+
     .empty-state {
         text-align: center;
         padding: 60px;
@@ -179,16 +182,16 @@
         border-radius: 12px;
         color: #666;
     }
-    
+
     .topic-actions {
         display: flex;
         gap: 10px;
     }
-    
+
     .btn-add {
         background: #28a745;
     }
-    
+
     .add-topic-form {
         background: white;
         padding: 20px;
@@ -196,7 +199,7 @@
         margin-bottom: 20px;
         box-shadow: 0 2px 10px rgba(0,0,0,0.08);
     }
-    
+
     .add-topic-form input {
         padding: 10px;
         border: 2px solid #4a90e2;
@@ -205,67 +208,95 @@
         width: 300px;
         margin-right: 10px;
     }
-    
-    .topic-card {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-    
+
     .topic-link {
         flex: 1;
         display: flex;
         align-items: center;
         gap: 12px;
     }
-    
+
     .topic-actions-btns {
         display: flex;
-        gap: 5px;
+        gap: 8px;
     }
-    
+
     .btn-icon {
         background: none;
         border: none;
         cursor: pointer;
-        font-size: 16px;
+        font-size: 18px;
         opacity: 0.6;
-        transition: opacity 0.3s;
-        padding: 5px;
+        transition: opacity 0.3s, transform 0.2s;
+        padding: 8px 10px;
+        border-radius: 6px;
+    }
+
+        .btn-icon:hover {
+        opacity: 1;
+        background: rgba(0,0,0,0.05);
+        transform: scale(1.1);
     }
     
-    .btn-icon:hover {
-        opacity: 1;
+    .edit-topic-form {
+        margin-top: 10px;
+    }
+    
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 14px;
     }
 </style>
 
 <script>
+
     function showAddTopicForm() {
         document.getElementById('addTopicForm').style.display = 'block';
     }
-    
+
     function hideAddTopicForm() {
         document.getElementById('addTopicForm').style.display = 'none';
     }
-    
-    function showEditTopicForm(topicId) {
-        var card = document.querySelector('.topic-card');
-        var formHtml = '<div class="edit-topic-form" style="display: block; width: 100%; padding: 15px; background: #f8f9fa; border-radius: 8px;">';
+
+    function showEditTopicForm(topicId, topicName) {
+        // Find the specific topic card for this topicId
+        var topicCards = document.querySelectorAll('.topic-card');
+        var targetCard = null;
+        for (var i = 0; i < topicCards.length; i++) {
+            var editBtn = topicCards[i].querySelector('button[onclick*="showEditTopicForm"][onclick*="' + topicId + '"]');
+            if (editBtn) {
+                targetCard = topicCards[i];
+                break;
+            }
+        }
+        
+        if (!targetCard) {
+            alert('Topic card not found');
+            return;
+        }
+        
+        // Hide original content, show form
+        var topicLink = targetCard.querySelector('.topic-link');
+        var actionsBtns = targetCard.querySelector('.topic-actions-btns');
+        topicLink.style.display = 'none';
+        actionsBtns.style.display = 'none';
+        
+        var formHtml = '<div class="edit-topic-form" style="width: 100%; padding: 15px; background: #f8f9fa; border-radius: 8px; margin-top: 10px;">';
         formHtml += '<form method="post" action="/topic/' + topicId + '/edit/">';
         formHtml += '{% csrf_token %}';
-        formHtml += '<input type="text" name="topic_name" value="" placeholder="Enter new topic name" required style="padding: 8px; border: 2px solid #4a90e2; border-radius: 6px; width: 200px; margin-right: 10px;">';
-        formHtml += '<button type="submit" class="btn">Save</button>';
-        formHtml += '<button type="button" class="btn btn-secondary" onclick="location.reload()">Cancel</button>';
+        formHtml += '<input type="text" name="topic_name" value="' + topicName + '" placeholder="Enter new topic name" required style="padding: 8px; border: 2px solid #4a90e2; border-radius: 6px; width: 200px; margin-right: 10px;">';
+        formHtml += '<button type="submit" class="btn btn-sm">Save</button>';
+        formHtml += '<button type="button" class="btn btn-secondary btn-sm" onclick="hideEditForm(' + topicId + ')">Cancel</button>';
         formHtml += '</form></div>';
         
-        // Create a temporary element to show the edit form
-        var tempDiv = document.createElement('div');
-        tempDiv.innerHTML = formHtml;
-        tempDiv.style.cssText = 'grid-column: 1 / -1; margin-bottom: 10px;';
-        
-        var grid = document.querySelector('.topics-grid');
-        grid.insertBefore(tempDiv.firstChild, grid.firstChild);
+        targetCard.innerHTML += formHtml;
     }
+    
+    function hideEditForm(topicId) {
+        location.reload();
+    }
+
+
 </script>
 {% endblock %}
 
